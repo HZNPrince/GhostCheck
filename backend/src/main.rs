@@ -1,5 +1,3 @@
-use axum::{Router, routing::get};
-
 use tokio::net::TcpListener;
 
 pub mod gh_auth;
@@ -7,6 +5,12 @@ pub use gh_auth::*;
 
 pub mod routes;
 pub use routes::*;
+
+pub mod gh_api;
+pub use gh_api::*;
+
+pub mod models;
+pub use models::*;
 
 #[tokio::main]
 async fn main() {

@@ -1,6 +1,9 @@
+use crate::compute_dev_metrics;
 use axum::{extract::Query, response::Redirect};
-use serde::Deserialize;
 use std::env;
+
+// Models
+use crate::auth_models::*;
 
 pub async fn root() -> &'static str {
     "Hello from the Rust Backend"
@@ -8,6 +11,7 @@ pub async fn root() -> &'static str {
 
 pub async fn github_login() -> Redirect {
     dotenv::dotenv().ok();
+    println!("Github Logging : Starting ...");
 
     let client_id = env::var("GITHUB_CLIENT_ID").unwrap();
 
@@ -17,22 +21,21 @@ pub async fn github_login() -> Redirect {
         client_id, redirect_uri
     );
 
+    println!("\nRedirecting to github url: {}", github_url);
     Redirect::temporary(&github_url)
-}
-
-#[derive(Deserialize)]
-pub struct CodeQuery {
-    code: String,
 }
 
 pub async fn github_callback(Query(params): Query<CodeQuery>) -> String {
     dotenv::dotenv().ok();
+    println!("Github reached at callback URL with code : {}", params.code);
+
     let client_id = env::var("GITHUB_CLIENT_ID").unwrap();
     let client_secret = env::var("GITHUB_CLIENT_SECRET").unwrap();
 
     let client = reqwest::Client::new();
 
-    let res = client
+    println!("Sending All Three (Client_id, client_secret, code) back to github to complete oauth");
+    let token_res: TokenResponse = client
         .post("https://github.com/login/oauth/access_token")
         .header("Accept", "application/json")
         .form(&[
@@ -43,9 +46,34 @@ pub async fn github_callback(Query(params): Query<CodeQuery>) -> String {
         .send()
         .await
         .unwrap()
-        .text()
+        .json()
         .await
         .unwrap();
 
-    format!("Github responded with: {}", res)
+    let token = token_res.access_token;
+    println!("Token_access received : {}", token);
+
+    println!("Get authorized username from https://api.github.com/user");
+    let user: GithubUser = client
+        .get("https://api.github.com/user")
+        .header("Authorization", format!("Bearer {}", token))
+        .header("User-Agent", "GhostCheck")
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+
+    let username = user.login;
+    println!("Username Received {}", username);
+
+    let (repo_count, total_commits) = compute_dev_metrics(&token, &username).await;
+
+    let dev_stats = format!(
+        "Dev Metrics\nUsername: {}\nRepos: {}\nTotal Commits: {}",
+        username, repo_count, total_commits
+    );
+    println!("{}", dev_stats);
+    dev_stats
 }

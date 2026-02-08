@@ -12,6 +12,9 @@ pub use gh_api::*;
 pub mod models;
 pub use models::*;
 
+pub mod signer;
+pub use signer::*;
+
 #[tokio::main]
 async fn main() {
     let app = routes::create_router();

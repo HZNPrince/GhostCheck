@@ -1,5 +1,6 @@
-use crate::compute_dev_metrics;
+use crate::{compute_dev_metrics, signer::sign_dev_badge_metrics};
 use axum::{extract::Query, response::Redirect};
+use serde_json;
 use std::env;
 
 // Models
@@ -75,5 +76,15 @@ pub async fn github_callback(Query(params): Query<CodeQuery>) -> String {
         username, repo_count, total_commits
     );
     println!("{}", dev_stats);
-    dev_stats
+
+    // Sign and parse to json
+    let signature = sign_dev_badge_metrics(&username, repo_count, total_commits);
+
+    let dev_stats_json = serde_json::json!({
+        "repo_count": repo_count,
+        "total_commit": total_commits,
+        "signature": signature,
+    });
+
+    dev_stats_json.to_string()
 }

@@ -1,6 +1,5 @@
-use crate::{compute_dev_metrics, signer::sign_dev_badge_metrics};
+use crate::create_session;
 use axum::{extract::Query, response::Redirect};
-use serde_json;
 use std::env;
 
 // Models
@@ -52,39 +51,10 @@ pub async fn github_callback(Query(params): Query<CodeQuery>) -> String {
         .unwrap();
 
     let token = token_res.access_token;
-    println!("Token_access received : {}", token);
+    let session_id = create_session(token.clone());
 
-    println!("Get authorized username from https://api.github.com/user");
-    let user: GithubUser = client
-        .get("https://api.github.com/user")
-        .header("Authorization", format!("Bearer {}", token))
-        .header("User-Agent", "GhostCheck")
-        .send()
-        .await
-        .unwrap()
-        .json()
-        .await
-        .unwrap();
-
-    let username = user.login;
-    println!("Username Received {}", username);
-
-    let (repo_count, total_commits) = compute_dev_metrics(&token, &username).await;
-
-    let dev_stats = format!(
-        "Dev Metrics\nUsername: {}\nRepos: {}\nTotal Commits: {}",
-        username, repo_count, total_commits
-    );
-    println!("{}", dev_stats);
-
-    // Sign and parse to json
-    let signature = sign_dev_badge_metrics(&username, repo_count, total_commits);
-
-    let dev_stats_json = serde_json::json!({
-        "repo_count": repo_count,
-        "total_commit": total_commits,
-        "signature": signature,
-    });
-
-    dev_stats_json.to_string()
+    format!(
+        "Login Successful ! Your session_id: {}\nGo to /metrics/dev?session_id={}",
+        session_id, session_id
+    )
 }

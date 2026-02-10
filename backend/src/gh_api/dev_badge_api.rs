@@ -1,8 +1,11 @@
+use std::collections::HashMap;
+
+use axum::{extract::Query, response::IntoResponse};
 use futures::future::join_all;
 use reqwest::Client;
 
 // Use Models
-use crate::api_models::*;
+use crate::{GithubUser, api_models::*, get_token, signer::sign_dev_badge_metrics};
 
 pub async fn fetch_github_user(access_token: &str) -> String {
     let client = Client::new();
@@ -97,4 +100,45 @@ pub async fn compute_dev_metrics(access_token: &str, username: &str) -> (u32, u3
     let total_commits = result.iter().sum();
 
     (repo_count, total_commits)
+}
+
+pub async fn dev_metrics(Query(params): Query<HashMap<String, String>>) -> impl IntoResponse {
+    let session_id = params.get("session_id").unwrap();
+    let token_access = get_token(session_id.clone()).expect("Invalid Session");
+
+    let client = Client::new();
+
+    println!("Get authorized username from https://api.github.com/user");
+    let user: GithubUser = client
+        .get("https://api.github.com/user")
+        .header("Authorization", format!("Bearer {}", token_access))
+        .header("User-Agent", "GhostCheck")
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+
+    let username = user.login;
+    println!("Username Received {}", username);
+
+    let (repo_count, total_commits) = compute_dev_metrics(&token_access, &username).await;
+
+    let dev_stats = format!(
+        "Dev Metrics\nUsername: {}\nRepos: {}\nTotal Commits: {}",
+        username, repo_count, total_commits
+    );
+    println!("{}", dev_stats);
+
+    // Sign and parse to json
+    let signature = sign_dev_badge_metrics(&username, repo_count, total_commits);
+
+    let dev_stats_json = serde_json::json!({
+        "repo_count": repo_count,
+        "total_commit": total_commits,
+        "signature": signature,
+    });
+
+    dev_stats_json.to_string()
 }

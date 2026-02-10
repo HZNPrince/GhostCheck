@@ -15,6 +15,9 @@ pub use models::*;
 pub mod signer;
 pub use signer::*;
 
+pub mod sessions;
+pub use sessions::*;
+
 #[tokio::main]
 async fn main() {
     let app = routes::create_router();

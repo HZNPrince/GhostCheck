@@ -91,6 +91,7 @@ dependencies = [
  "ed25519-dalek",
  "futures",
  "hex",
+ "once_cell",
  "rand",
  "reqwest",
  "serde",

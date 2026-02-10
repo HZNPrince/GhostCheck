@@ -13,15 +13,17 @@ declare_id!("GQsPhnZApw9MY7khsbRLtL5mAGpmMn8wp8CFNDPTxGQr");
 pub mod ghost_check {
     use super::*;
 
-    pub fn init_config(ctx: Context<InitConfig>, vkey_hash: [u8; 64]) -> Result<()> {
-        process_init_config(ctx, vkey_hash)
+    pub fn init_config(ctx: Context<InitConfig>, backend_pubkey: [u8; 32]) -> Result<()> {
+        ctx.accounts.init_config(backend_pubkey, &ctx.bumps)
     }
-
-    pub fn verify_proof(
-        ctx: Context<VerifyProof>,
-        public_inputs: [u8; 32],
-        zk_proof: Vec<u8>,
+    pub fn mint_dev_badge(
+        ctx: Context<DevBadge>,
+        username: &[u8; 32],
+        repo_count: u32,
+        total_commits: u32,
     ) -> Result<()> {
-        process_verify_proof(ctx, public_inputs, zk_proof)
+        ctx.accounts.verify_signature();
+        ctx.accounts
+            .mint_collection(username, repo_count, total_commits, &ctx.bumps)
     }
 }

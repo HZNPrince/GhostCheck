@@ -4,25 +4,19 @@ use anchor_lang::prelude::*;
 #[account]
 pub struct GhostConfig {
     pub admin: Pubkey,
-    pub vkey_hash: [u8; 64],
-    pub collection_mint: Pubkey,
+    pub backend_pubkey: [u8; 32],
+    pub dev_collections_count: u64,
     pub nft_minted: u32,
     pub bump: u8,
 }
 
 #[derive(InitSpace)]
 #[account]
-pub struct UserAccount {
-    pub latest_receipt: Pubkey,
-    pub bump: u8,
-}
-
-#[derive(InitSpace)]
-#[account]
-pub struct VerificationReceipt {
-    pub user: Pubkey,
+pub struct DevState {
+    pub address: Pubkey,
     pub hashed_username: [u8; 32],
-    pub repo_hashed: [u8; 32],
-    pub is_minted: bool,
+    pub total_commits: u32,
+    pub repo_count: u32,
+    pub verified_repo: u64,
     pub bump: u8,
 }

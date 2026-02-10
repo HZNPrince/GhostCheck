@@ -1,5 +1,6 @@
-use crate::{errors::GhostErrors, program::GhostCheck, state::GhostConfig};
 use anchor_lang::prelude::*;
+
+use crate::{errors::GhostErrors, program::GhostCheck, state::GhostConfig};
 
 #[derive(Accounts)]
 pub struct InitConfig<'info> {
@@ -15,27 +16,25 @@ pub struct InitConfig<'info> {
     )]
     pub ghost_config: Account<'info, GhostConfig>,
 
-    #[account(
-        constraint = this_program.programdata_address()? == Some(program_data.key() ) @ GhostErrors::PgIdPgDataMismatch,
-    )]
+    pub system_program: Program<'info, System>,
+
+    #[account(constraint = this_program.programdata_address()? == Some(program_data.key()) @GhostErrors::ProgramDataMismatch)]
     pub this_program: Program<'info, GhostCheck>,
 
-    #[account(
-        constraint = program_data.upgrade_authority_address == Some(admin.key()) @GhostErrors::UpgradeAuthorityMismatch,
-    )]
+    #[account(constraint = program_data.upgrade_authority_address == Some(admin.key()) @GhostErrors::UpgradeAuthorityMismatch)]
     pub program_data: Account<'info, ProgramData>,
-
-    pub system_program: Program<'info, System>,
 }
 
-pub fn process_init_config(ctx: Context<InitConfig>, vkey_hash: [u8; 64]) -> Result<()> {
-    ctx.accounts.ghost_config.set_inner(GhostConfig {
-        admin: ctx.accounts.admin.key(),
-        vkey_hash,
-        collection_mint: Pubkey::default(),
-        nft_minted: 0,
-        bump: ctx.bumps.ghost_config,
-    });
+impl<'info> InitConfig<'info> {
+    pub fn init_config(&mut self, backend_pubkey: [u8; 32], bumps: &InitConfigBumps) -> Result<()> {
+        self.ghost_config.set_inner(GhostConfig {
+            admin: self.admin.key(),
+            backend_pubkey,
+            dev_collections_count: 0,
+            nft_minted: 0,
+            bump: bumps.ghost_config,
+        });
 
-    Ok(())
+        Ok(())
+    }
 }

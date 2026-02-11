@@ -1,27 +1,32 @@
 use std::collections::HashMap;
 
-use axum::{extract::Query, response::IntoResponse};
+use axum::{
+    Json,
+    extract::{Query, State},
+};
 use futures::future::join_all;
 use reqwest::Client;
 
 // Use Models
-use crate::{GithubUser, api_models::*, get_token, signer::sign_dev_badge_metrics};
+use crate::{
+    GithubUser, api_models::*, get_session, signer::sign_dev_badge_metrics, signer_public_key,
+};
 
 pub async fn fetch_github_user(access_token: &str) -> String {
     let client = Client::new();
 
-    let res = client
+    let res: GithubUser = client
         .get("https://api.github.com/user")
         .header("Authorization", format!("Bearer {}", access_token))
         .header("User-Agent", "GhostCheck")
         .send()
         .await
         .unwrap()
-        .text()
+        .json()
         .await
         .unwrap();
 
-    res
+    res.login
 }
 
 pub async fn fetch_user_repos(access_token: &str) -> Vec<Repo> {
@@ -72,11 +77,13 @@ pub async fn fetch_commits_for_repo(
     0
 }
 
-pub async fn compute_dev_metrics(access_token: &str, username: &str) -> (u32, u32) {
+pub async fn compute_dev_metrics(
+    client: &Client,
+    access_token: &str,
+    username: &str,
+) -> (u32, u32) {
     let repos = fetch_user_repos(&access_token).await;
     let repo_count = repos.len() as u32;
-
-    let client = Client::new();
 
     let futures = repos.into_iter().map(|repo| {
         let access_token = access_token.to_string();
@@ -102,28 +109,22 @@ pub async fn compute_dev_metrics(access_token: &str, username: &str) -> (u32, u3
     (repo_count, total_commits)
 }
 
-pub async fn dev_metrics(Query(params): Query<HashMap<String, String>>) -> impl IntoResponse {
+pub async fn dev_metrics(
+    State(state): State<AppState>,
+    Query(params): Query<HashMap<String, String>>,
+) -> Json<serde_json::Value> {
     let session_id = params.get("session_id").unwrap();
-    let token_access = get_token(session_id.clone()).expect("Invalid Session");
-
-    let client = Client::new();
-
-    println!("Get authorized username from https://api.github.com/user");
-    let user: GithubUser = client
-        .get("https://api.github.com/user")
-        .header("Authorization", format!("Bearer {}", token_access))
-        .header("User-Agent", "GhostCheck")
-        .send()
+    let fetched_session = get_session(&state.db, session_id)
         .await
-        .unwrap()
-        .json()
-        .await
-        .unwrap();
+        .expect("Invalid Session id, failed to fetch from db");
 
-    let username = user.login;
+    let token_access = fetched_session.access_token;
+    let username = fetched_session.username;
+
     println!("Username Received {}", username);
 
-    let (repo_count, total_commits) = compute_dev_metrics(&token_access, &username).await;
+    let (repo_count, total_commits) =
+        compute_dev_metrics(&state.client, &token_access, &username).await;
 
     let dev_stats = format!(
         "Dev Metrics\nUsername: {}\nRepos: {}\nTotal Commits: {}",
@@ -132,13 +133,16 @@ pub async fn dev_metrics(Query(params): Query<HashMap<String, String>>) -> impl 
     println!("{}", dev_stats);
 
     // Sign and parse to json
-    let signature = sign_dev_badge_metrics(&username, repo_count, total_commits);
+    let (signature_bytes, padded_user) =
+        sign_dev_badge_metrics(&username, repo_count, total_commits);
 
-    let dev_stats_json = serde_json::json!({
+    let public_key_bytes = signer_public_key();
+
+    Json(serde_json::json!({
+        "username_padded": padded_user,
         "repo_count": repo_count,
         "total_commit": total_commits,
-        "signature": signature,
-    });
-
-    dev_stats_json.to_string()
+        "signature": signature_bytes,
+        "public_key_bytes": public_key_bytes,
+    }))
 }

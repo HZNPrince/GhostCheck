@@ -1,5 +1,8 @@
-use crate::create_session;
-use axum::{extract::Query, response::Redirect};
+use crate::{AppState, fetch_github_user, insert_session};
+use axum::{
+    extract::{Query, State},
+    response::Redirect,
+};
 use std::env;
 
 // Models
@@ -10,7 +13,6 @@ pub async fn root() -> &'static str {
 }
 
 pub async fn github_login() -> Redirect {
-    dotenv::dotenv().ok();
     println!("Github Logging : Starting ...");
 
     let client_id = env::var("GITHUB_CLIENT_ID").unwrap();
@@ -25,14 +27,16 @@ pub async fn github_login() -> Redirect {
     Redirect::temporary(&github_url)
 }
 
-pub async fn github_callback(Query(params): Query<CodeQuery>) -> String {
-    dotenv::dotenv().ok();
+pub async fn github_callback(
+    State(state): State<AppState>,
+    Query(params): Query<CodeQuery>,
+) -> String {
     println!("Github reached at callback URL with code : {}", params.code);
 
     let client_id = env::var("GITHUB_CLIENT_ID").unwrap();
     let client_secret = env::var("GITHUB_CLIENT_SECRET").unwrap();
 
-    let client = reqwest::Client::new();
+    let client = &state.client;
 
     println!("Sending All Three (Client_id, client_secret, code) back to github to complete oauth");
     let token_res: TokenResponse = client
@@ -51,7 +55,13 @@ pub async fn github_callback(Query(params): Query<CodeQuery>) -> String {
         .unwrap();
 
     let token = token_res.access_token;
-    let session_id = create_session(token.clone());
+
+    let username = fetch_github_user(&token).await;
+
+    // Add to db
+    let session_id = insert_session(&state.db, &token, &username)
+        .await
+        .expect("Error inserting and getting the session id");
 
     format!(
         "Login Successful ! Your session_id: {}\nGo to /metrics/dev?session_id={}",

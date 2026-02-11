@@ -6,6 +6,8 @@ pub enum GhostErrors {
     PgIdPgDataMismatch,
     #[msg("admin key and upgrade authority key Mismatch")]
     UpgradeAuthorityMismatch,
+    #[msg("DevBadge asset passed is already initialized")]
+    CollectionAlreadyInitialized,
     #[msg("Program Data does not match the program data passed")]
     ProgramDataMismatch,
     #[msg("Signature Verification Failed")]

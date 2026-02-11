@@ -35,7 +35,7 @@ pub struct DevBadge<'info> {
     pub dev_badge_account: Account<'info, DevState>,
 
     /// CHECK: Core will create this
-    #[account(mut)]
+    #[account(mut,constraint = asset.data_is_empty() @GhostErrors::CollectionAlreadyInitialized)]
     pub asset: UncheckedAccount<'info>,
 
     pub system_program: Program<'info, System>,

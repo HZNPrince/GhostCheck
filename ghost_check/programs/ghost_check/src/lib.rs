@@ -18,12 +18,12 @@ pub mod ghost_check {
     }
     pub fn mint_dev_badge(
         ctx: Context<DevBadge>,
-        username: &[u8; 32],
+        username: [u8; 32],
         repo_count: u32,
         total_commits: u32,
     ) -> Result<()> {
-        ctx.accounts.verify_signature();
+        ctx.accounts.verify_signature()?;
         ctx.accounts
-            .mint_collection(username, repo_count, total_commits, &ctx.bumps)
+            .mint_collection(&username, repo_count, total_commits, &ctx.bumps)
     }
 }

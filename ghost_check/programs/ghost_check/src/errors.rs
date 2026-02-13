@@ -8,6 +8,8 @@ pub enum GhostErrors {
     UpgradeAuthorityMismatch,
     #[msg("DevBadge asset passed is already initialized")]
     CollectionAlreadyInitialized,
+    #[msg("Collection(Dev_badge) for dev not initialized")]
+    CollectionNotInitialized,
     #[msg("Program Data does not match the program data passed")]
     ProgramDataMismatch,
     #[msg("Signature Verification Failed")]
@@ -16,4 +18,6 @@ pub enum GhostErrors {
     PubkeyParseFailed,
     #[msg("Backend Pubkey of signingkey dosent match the pubkey signed in instruction 0")]
     BackendPubkeyMismatch,
+    #[msg("Ed25519Program id dosent match the ix program id passed at instruction 0")]
+    Ed25519PrgmIdMismatch,
 }

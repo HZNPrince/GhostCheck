@@ -35,7 +35,10 @@ pub struct DevBadge<'info> {
     pub dev_badge_account: Account<'info, DevState>,
 
     /// CHECK: Core will create this
-    #[account(mut,constraint = asset.data_is_empty() @GhostErrors::CollectionAlreadyInitialized)]
+    #[account(mut,
+        seeds = [b"dev_badge_collection", dev.key().as_ref()],
+        bump,
+        constraint = asset.data_is_empty() @GhostErrors::CollectionAlreadyInitialized)]
     pub asset: UncheckedAccount<'info>,
 
     pub system_program: Program<'info, System>,
@@ -81,7 +84,12 @@ impl<'info> DevBadge<'info> {
         bumps: &DevBadgeBumps,
     ) -> Result<()> {
         // Create Collection Asset for new Dev
-        let signer_seeds: &[&[&[u8]]] = &[&[b"ghost_config", &[self.ghost_config.bump]]];
+        let config_seeds: &[&[&[u8]]] = &[&[b"ghost_config", &[self.ghost_config.bump]]];
+        let asset_seeds: &[&[&[u8]]] = &[&[
+            b"dev_badge_collection",
+            &self.dev.key().to_bytes(),
+            &[bumps.asset],
+        ]];
 
         CreateCollectionV2CpiBuilder::new(&self.core_program.to_account_info())
             .collection(&self.asset.to_account_info())
@@ -109,7 +117,7 @@ impl<'info> DevBadge<'info> {
                 },
             ])
             .external_plugin_adapters(vec![])
-            .invoke_signed(signer_seeds)?;
+            .invoke_signed(&[config_seeds[0], asset_seeds[0]])?;
 
         self.dev_badge_account.set_inner(DevState {
             address: self.asset.key(),
@@ -118,6 +126,7 @@ impl<'info> DevBadge<'info> {
             repo_count,
             verified_repo: 0,
             bump: bumps.dev_badge_account,
+            collection_asset_bump: bumps.asset,
         });
         Ok(())
     }

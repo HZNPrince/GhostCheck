@@ -3,3 +3,6 @@ pub use dev_badge::*;
 
 pub mod init_config;
 pub use init_config::*;
+
+pub mod repo_badge;
+pub use repo_badge::*;

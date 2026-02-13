@@ -26,4 +26,25 @@ pub mod ghost_check {
         ctx.accounts
             .mint_collection(&username, repo_count, total_commits, &ctx.bumps)
     }
+
+    pub fn mint_repo_badge(
+        ctx: Context<RepoBadge>,
+        repo_name_padded: [u8; 32],
+        username_padded: [u8; 32],
+        stars: u32,
+        commits: u32,
+        lang1: Vec<u8>,
+        lang2: Vec<u8>,
+    ) -> Result<()> {
+        ctx.accounts.verify_signature()?;
+        ctx.accounts.mint_repo_badge(
+            repo_name_padded,
+            username_padded,
+            stars,
+            commits,
+            lang1,
+            lang2,
+            &ctx.bumps,
+        )
+    }
 }

@@ -1,1 +1,0 @@
-leptos::prelude::View<leptos::html::HtmlElement<leptos::html::P, (), (&str,)>>

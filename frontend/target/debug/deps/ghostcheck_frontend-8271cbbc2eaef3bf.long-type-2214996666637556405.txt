@@ -1,3 +1,0 @@
-RoutesProps<_, leptos::prelude::View<leptos::html::HtmlElement<leptos::html::P, (), (&str,)>>, _>
-fn(RoutesProps<_, leptos::prelude::View<leptos::html::HtmlElement<leptos::html::P, (), (&str,)>>, _>) -> impl leptos::IntoView {leptos_router::components::Routes::<_, leptos::prelude::View<leptos::html::HtmlElement<leptos::html::P, (), (&str,)>>, _>}
-leptos::prelude::Component<RoutesProps<_, leptos::prelude::View<leptos::html::HtmlElement<leptos::html::P, (), (&str,)>>, _>>

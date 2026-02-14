@@ -1,1 +1,0 @@
-RoutesPropsBuilder<_, leptos::prelude::View<leptos::html::HtmlElement<leptos::html::P, (), (&str,)>>, _, ((leptos::prelude::View<leptos::html::HtmlElement<leptos::html::P, (), (&str,)>>,), (), ())>

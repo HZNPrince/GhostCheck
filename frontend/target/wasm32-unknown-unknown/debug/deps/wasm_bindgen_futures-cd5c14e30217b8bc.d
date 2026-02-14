@@ -1,9 +1,0 @@
-/Users/aster27/Desktop/github/Side_Projects/GhostCheck/frontend/target/wasm32-unknown-unknown/debug/deps/wasm_bindgen_futures-cd5c14e30217b8bc.d: /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasm-bindgen-futures-0.4.58/src/lib.rs /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasm-bindgen-futures-0.4.58/src/queue.rs /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasm-bindgen-futures-0.4.58/src/task/singlethread.rs
-
-/Users/aster27/Desktop/github/Side_Projects/GhostCheck/frontend/target/wasm32-unknown-unknown/debug/deps/libwasm_bindgen_futures-cd5c14e30217b8bc.rlib: /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasm-bindgen-futures-0.4.58/src/lib.rs /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasm-bindgen-futures-0.4.58/src/queue.rs /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasm-bindgen-futures-0.4.58/src/task/singlethread.rs
-
-/Users/aster27/Desktop/github/Side_Projects/GhostCheck/frontend/target/wasm32-unknown-unknown/debug/deps/libwasm_bindgen_futures-cd5c14e30217b8bc.rmeta: /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasm-bindgen-futures-0.4.58/src/lib.rs /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasm-bindgen-futures-0.4.58/src/queue.rs /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasm-bindgen-futures-0.4.58/src/task/singlethread.rs
-
-/Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasm-bindgen-futures-0.4.58/src/lib.rs:
-/Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasm-bindgen-futures-0.4.58/src/queue.rs:
-/Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasm-bindgen-futures-0.4.58/src/task/singlethread.rs:

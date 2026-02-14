@@ -1,0 +1,7 @@
+# Rust
+target/
+**/target/
+
+# Frontend builds
+dist/
+frontend/dist/

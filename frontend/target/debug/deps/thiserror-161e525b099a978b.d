@@ -1,0 +1,14 @@
+/Users/aster27/Desktop/github/Side_Projects/GhostCheck/frontend/target/debug/deps/thiserror-161e525b099a978b.d: /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/lib.rs /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/aserror.rs /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/display.rs /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/var.rs /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/private.rs /Users/aster27/Desktop/github/Side_Projects/GhostCheck/frontend/target/debug/build/thiserror-83e57cd0a03535ad/out/private.rs
+
+/Users/aster27/Desktop/github/Side_Projects/GhostCheck/frontend/target/debug/deps/libthiserror-161e525b099a978b.rlib: /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/lib.rs /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/aserror.rs /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/display.rs /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/var.rs /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/private.rs /Users/aster27/Desktop/github/Side_Projects/GhostCheck/frontend/target/debug/build/thiserror-83e57cd0a03535ad/out/private.rs
+
+/Users/aster27/Desktop/github/Side_Projects/GhostCheck/frontend/target/debug/deps/libthiserror-161e525b099a978b.rmeta: /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/lib.rs /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/aserror.rs /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/display.rs /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/var.rs /Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/private.rs /Users/aster27/Desktop/github/Side_Projects/GhostCheck/frontend/target/debug/build/thiserror-83e57cd0a03535ad/out/private.rs
+
+/Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/lib.rs:
+/Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/aserror.rs:
+/Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/display.rs:
+/Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/var.rs:
+/Users/aster27/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/private.rs:
+/Users/aster27/Desktop/github/Side_Projects/GhostCheck/frontend/target/debug/build/thiserror-83e57cd0a03535ad/out/private.rs:
+
+# env-dep:OUT_DIR=/Users/aster27/Desktop/github/Side_Projects/GhostCheck/frontend/target/debug/build/thiserror-83e57cd0a03535ad/out

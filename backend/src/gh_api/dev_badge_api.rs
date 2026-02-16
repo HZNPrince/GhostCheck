@@ -1,9 +1,4 @@
-use std::collections::HashMap;
-
-use axum::{
-    Json,
-    extract::{Query, State},
-};
+use axum::{Json, extract::State, http::HeaderMap};
 use futures::future::join_all;
 use reqwest::Client;
 
@@ -109,11 +104,23 @@ pub async fn compute_dev_metrics(
     (repo_count, total_commits)
 }
 
+// /api/metrics/dev/
 pub async fn dev_metrics(
     State(state): State<AppState>,
-    Query(params): Query<HashMap<String, String>>,
+    headers: HeaderMap,
 ) -> Json<serde_json::Value> {
-    let session_id = params.get("session_id").unwrap();
+    let session_id = headers
+        .get("cookie")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("")
+        .split(';')
+        .find_map(|c| c.trim().strip_prefix("session_id="))
+        .unwrap_or("");
+
+    if session_id.is_empty() {
+        return Json(serde_json::json!({"error": "Not authorized"}));
+    }
+
     let fetched_session = get_session(&state.db, session_id)
         .await
         .expect("Invalid Session id, failed to fetch from db");
@@ -133,16 +140,17 @@ pub async fn dev_metrics(
     println!("{}", dev_stats);
 
     // Sign and parse to json
-    let (signature_bytes, padded_user) =
+    let (signature_bytes, hashed_username, hashed_message) =
         sign_dev_badge_metrics(&username, repo_count, total_commits);
 
     let public_key_bytes = signer_public_key();
 
     Json(serde_json::json!({
-        "username_padded": padded_user,
+        "hashed_username": hashed_username,
         "repo_count": repo_count,
         "total_commit": total_commits,
         "signature": signature_bytes,
         "public_key_bytes": public_key_bytes,
+        "signed_message": hashed_message,
     }))
 }

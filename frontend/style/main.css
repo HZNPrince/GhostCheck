@@ -66,6 +66,29 @@ body {
     box-shadow: 0 0 25px rgba(249, 115, 22, 0.6);
     transform: translateY(-2px);
 }
+
+.nav-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+.nav-github-btn {
+    color: #f97316;
+    text-decoration: none;
+    font-size: 0.5rem;
+    border: 1px solid #f97316;
+    padding: 0.4rem 0.8rem;
+    transition: all 0.3s ease;
+}
+.nav-github-btn:hover {
+    background: rgba(249, 115, 22, 0.1);
+}
+.nav-github-connected {
+    color: #22c55e;
+    font-size: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid #22c55e;
+}
 /* ============================================
    HERO SECTION (Landing Page)
    ============================================ */
@@ -303,6 +326,15 @@ body {
     font-size: 0.6rem;
     max-width: 400px;
 }
+
+.dev-actions {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
 /* Repo input */
 .repo-input-group {
     display: flex;

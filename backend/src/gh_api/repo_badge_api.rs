@@ -3,6 +3,7 @@ use anyhow;
 use axum::{
     Json,
     extract::{Query, State},
+    http::HeaderMap,
 };
 use reqwest::Client;
 use std::collections::HashMap;
@@ -26,7 +27,10 @@ pub async fn fetch_repo_metrics(
         .send()
         .await?
         .json()
-        .await?;
+        .await
+        .map_err(|e| {
+            anyhow::anyhow!("RepoStats fetch failed : Did you enter the repo name correctly ?")
+        })?;
 
     // Validate owner and store the stars
     if repo_info.owner.login != username {
@@ -85,8 +89,23 @@ pub async fn fetch_repo_metrics(
 pub async fn repo_metrics(
     State(state): State<AppState>,
     Query(params): Query<RepoQuery>,
+    headers: HeaderMap,
 ) -> Json<serde_json::Value> {
-    let session = get_session(&state.db, &params.session_id)
+    let session_id = headers
+        .get("cookie")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("")
+        .split(';')
+        .find_map(|s| s.trim().strip_prefix("session_id="))
+        .unwrap_or("");
+
+    if session_id.is_empty() {
+        return Json(serde_json::json!({
+            "error": "Not authorized"
+        }));
+    }
+
+    let session = get_session(&state.db, session_id)
         .await
         .expect("Error Fetching session from db");
 
@@ -99,13 +118,13 @@ pub async fn repo_metrics(
             .expect("Error fetching repo stats");
 
     //Sign the metrics
-    let (signature, padded_user) =
+    let (signature, padded_user, hashed_message) =
         sign_repo_badge_metrics(&username, &params.repo, &lang1, &lang2, stars, commits);
 
     let public_key = signer_public_key();
 
     Json(serde_json::json!({
-        "username_padded": padded_user,
+        "hashed_username": padded_user,
         "repo_name_bytes": params.repo.as_bytes(),
         "lang1_bytes": lang1,
         "lang2_bytes": lang2,
@@ -113,5 +132,6 @@ pub async fn repo_metrics(
         "commits": commits,
         "signature": signature,
         "public_key_bytes": public_key,
+        "signed_message": hashed_message,
     }))
 }

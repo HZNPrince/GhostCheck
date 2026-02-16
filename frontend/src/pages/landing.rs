@@ -58,15 +58,15 @@ pub fn Landing() -> impl IntoView {
         </section>
 
         <section class="stats-bar">
-            <div class="stats">
+            <div class="stat">
                 <span class="stat-value">"--"</span>
                 <span class="stat-label">"DEVS VERIFIED"</span>
             </div>
-            <div class="stats">
+            <div class="stat">
                 <span class="stat-value">"--"</span>
                 <span class="stat-label">"BADGES MINTED"</span>
             </div>
-            <div class="stats">
+            <div class="stat">
                 <span class="stat-value">"--"</span>
                 <span class="stat-label">"REPO VERIFIED"</span>
             </div>

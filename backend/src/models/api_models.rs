@@ -28,7 +28,6 @@ pub struct RepoInfo {
 // To receive payload from GET /metrics/repo?session_id=...&repo=...
 #[derive(Deserialize)]
 pub struct RepoQuery {
-    pub session_id: String,
     pub repo: String,
 }
 

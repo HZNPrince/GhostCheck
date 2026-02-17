@@ -12,7 +12,7 @@ use std::env;
 use crate::auth_models::*;
 
 pub async fn root() -> &'static str {
-    "Hello from the Rust Backend"
+    "Hello from the GhostCheck Backend"
 }
 
 // /api/auth/github
@@ -64,10 +64,10 @@ pub async fn github_callback(
 
     let token = token_res.access_token;
 
-    let username = fetch_github_user(&token).await;
+    let gh_user = fetch_github_user(&token).await;
 
     // Add to db
-    let session_id = insert_session(&state.db, &token, &username)
+    let session_id = insert_session(&state.db, &token, &gh_user.login)
         .await
         .expect("Error inserting and getting the session id");
 

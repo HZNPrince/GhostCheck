@@ -11,7 +11,10 @@ pub struct TokenResponse {
     pub scope: String,
 }
 
+// For auth , for fetch gh user stats
 #[derive(Deserialize)]
 pub struct GithubUser {
     pub login: String,
+    pub followers: u32,
+    pub created_at: String,
 }

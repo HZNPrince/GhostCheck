@@ -1,4 +1,5 @@
 use axum::{Json, extract::State, http::HeaderMap};
+use chrono::{DateTime, Utc};
 use futures::future::join_all;
 use reqwest::Client;
 
@@ -7,7 +8,7 @@ use crate::{
     GithubUser, api_models::*, get_session, signer::sign_dev_badge_metrics, signer_public_key,
 };
 
-pub async fn fetch_github_user(access_token: &str) -> String {
+pub async fn fetch_github_user(access_token: &str) -> GithubUser {
     let client = Client::new();
 
     let res: GithubUser = client
@@ -21,7 +22,7 @@ pub async fn fetch_github_user(access_token: &str) -> String {
         .await
         .unwrap();
 
-    res.login
+    res
 }
 
 pub async fn fetch_user_repos(access_token: &str) -> Vec<Repo> {
@@ -37,6 +38,43 @@ pub async fn fetch_user_repos(access_token: &str) -> Vec<Repo> {
         .json::<Vec<Repo>>()
         .await
         .unwrap()
+}
+
+// For fetching the oss stats for dev_badge
+pub async fn fetch_oss_stats(client: &Client, username: &str, access_token: &str) -> (u32, u32) {
+    let pr_response: serde_json::Value = client
+        .get(format!(
+            "https://api.github.com/search/issues?q=author:{}+type:pr+is:merged",
+            username
+        ))
+        .header("Authorization", format!("Bearer {}", access_token))
+        .header("User-Agent", "GhostCheck")
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+
+    let pr_merged = pr_response["total_count"].as_u64().unwrap_or(0) as u32;
+
+    let issues_response = client
+        .get(format!(
+            "https://api.github.com/search/issues?q=author:{}+type:issue+is:closed",
+            username
+        ))
+        .header("Authorization", format!("Bearer {}", access_token))
+        .header("User-Agent", "GhostCheck")
+        .send()
+        .await
+        .unwrap()
+        .json::<serde_json::Value>()
+        .await
+        .unwrap();
+
+    let issues_closed = issues_response["total_count"].as_u64().unwrap_or(0) as u32;
+
+    (pr_merged, issues_closed)
 }
 
 pub async fn fetch_commits_for_repo(
@@ -76,9 +114,18 @@ pub async fn compute_dev_metrics(
     client: &Client,
     access_token: &str,
     username: &str,
-) -> (u32, u32) {
+) -> (u32, u32, u32, u32) {
     let repos = fetch_user_repos(&access_token).await;
     let repo_count = repos.len() as u32;
+
+    let owned_repo_count = repos.iter().filter(|repo| !repo.fork).count() as u32;
+
+    let mut stars_count = 0;
+    for repo in repos.iter() {
+        if repo.owner.login == username {
+            stars_count += repo.stargazers_count
+        }
+    }
 
     let futures = repos.into_iter().map(|repo| {
         let access_token = access_token.to_string();
@@ -101,7 +148,28 @@ pub async fn compute_dev_metrics(
 
     let total_commits = result.iter().sum();
 
-    (repo_count, total_commits)
+    (repo_count, owned_repo_count, total_commits, stars_count)
+}
+
+// Check the reputation_level of the user
+pub async fn get_reputation_level(
+    repo_count: u32,
+    total_commits: u32,
+    account_age_days: u32,
+) -> u8 {
+    let user_level: u8 = if repo_count >= 100 && total_commits >= 1500 && account_age_days >= 730 {
+        5 // Legend
+    } else if repo_count >= 50 && total_commits >= 500 && account_age_days >= 365 {
+        4 // Architect
+    } else if repo_count >= 20 && total_commits >= 200 && account_age_days >= 120 {
+        3 // Builder
+    } else if repo_count >= 5 && total_commits >= 30 {
+        2 // Coder
+    } else {
+        1 // Ghost
+    };
+
+    user_level
 }
 
 // /api/metrics/dev/
@@ -130,25 +198,53 @@ pub async fn dev_metrics(
 
     println!("Username Received {}", username);
 
-    let (repo_count, total_commits) =
+    // fetch user metrics
+    let (repo_count, owned_repo_count, total_commits, stars) =
         compute_dev_metrics(&state.client, &token_access, &username).await;
 
-    let dev_stats = format!(
+    println!(
         "Dev Metrics\nUsername: {}\nRepos: {}\nTotal Commits: {}",
         username, repo_count, total_commits
     );
-    println!("{}", dev_stats);
+
+    // Fetch user oss stats
+    let (pr_merged, issues_closed) = fetch_oss_stats(&state.client, &username, &token_access).await;
+
+    // fetch user stats
+    let gh_user = fetch_github_user(&token_access).await;
+    let created: DateTime<Utc> = gh_user.created_at.parse().unwrap();
+    let account_age_days = (Utc::now() - created).num_days() as u32;
+
+    // Get dev's reputation level
+    let user_level = get_reputation_level(repo_count, total_commits, account_age_days).await;
 
     // Sign and parse to json
-    let (signature_bytes, hashed_username, hashed_message) =
-        sign_dev_badge_metrics(&username, repo_count, total_commits);
+    let (signature_bytes, hashed_username, hashed_message) = sign_dev_badge_metrics(
+        &username,
+        repo_count,
+        total_commits,
+        owned_repo_count,
+        stars,
+        pr_merged,
+        issues_closed,
+        gh_user.followers,
+        account_age_days,
+        user_level,
+    );
 
     let public_key_bytes = signer_public_key();
 
     Json(serde_json::json!({
         "hashed_username": hashed_username,
         "repo_count": repo_count,
+        "owned_repo_count": owned_repo_count,
+        "total_stars": stars,
         "total_commit": total_commits,
+        "prs_merged": pr_merged,
+        "issues_closed": issues_closed,
+        "followers": gh_user.followers,
+        "account_age_days": account_age_days,
+        "reputation_level": user_level,
         "signature": signature_bytes,
         "public_key_bytes": public_key_bytes,
         "signed_message": hashed_message,

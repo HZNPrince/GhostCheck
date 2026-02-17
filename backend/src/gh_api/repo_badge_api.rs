@@ -13,7 +13,7 @@ pub async fn fetch_repo_metrics(
     token_access: &str,
     username: &str,
     repo_name: &str,
-) -> anyhow::Result<(u32, Vec<u8>, Vec<u8>, u32)> {
+) -> anyhow::Result<(u32, Vec<u8>, Vec<u8>, u32, u32, u32, u8)> {
     // returning (stars , lang1 , option<lang2> , commits)
 
     // fetch the stargazers_count and owner
@@ -28,7 +28,7 @@ pub async fn fetch_repo_metrics(
         .await?
         .json()
         .await
-        .map_err(|e| {
+        .map_err(|_| {
             anyhow::anyhow!("RepoStats fetch failed : Did you enter the repo name correctly ?")
         })?;
 
@@ -83,7 +83,17 @@ pub async fn fetch_repo_metrics(
         .map(|c| c.contributions)
         .unwrap_or(0);
 
-    Ok((stars, lang1, lang2, commits))
+    let is_forked = if repo_info.fork { 1u8 } else { 0u8 };
+
+    Ok((
+        stars,
+        lang1,
+        lang2,
+        commits,
+        repo_info.forks_count,
+        repo_info.open_issues_count,
+        is_forked,
+    ))
 }
 
 pub async fn repo_metrics(
@@ -112,24 +122,36 @@ pub async fn repo_metrics(
     let access_token = session.access_token;
     let username = session.username;
 
-    let (stars, lang1, lang2, commits) =
+    let (stars, lang1, lang2, commits, fork_count, issues_open_count, is_forked) =
         fetch_repo_metrics(&state.client, &access_token, &username, &params.repo)
             .await
             .expect("Error fetching repo stats");
 
     //Sign the metrics
-    let (signature, padded_user, hashed_message) =
-        sign_repo_badge_metrics(&username, &params.repo, &lang1, &lang2, stars, commits);
+    let (signature, hashed_username, hashed_message) = sign_repo_badge_metrics(
+        &username,
+        &params.repo,
+        &lang1,
+        &lang2,
+        stars,
+        commits,
+        fork_count,
+        issues_open_count,
+        is_forked,
+    );
 
     let public_key = signer_public_key();
 
     Json(serde_json::json!({
-        "hashed_username": padded_user,
+        "hashed_username": hashed_username,
         "repo_name_bytes": params.repo.as_bytes(),
         "lang1_bytes": lang1,
         "lang2_bytes": lang2,
         "stars": stars,
         "commits": commits,
+        "fork_count": fork_count,
+        "issues_open_count": issues_open_count ,
+        "is_fork": is_forked,
         "signature": signature,
         "public_key_bytes": public_key,
         "signed_message": hashed_message,

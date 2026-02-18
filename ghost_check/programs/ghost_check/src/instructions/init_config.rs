@@ -30,8 +30,9 @@ impl<'info> InitConfig<'info> {
         self.ghost_config.set_inner(GhostConfig {
             admin: self.admin.key(),
             backend_pubkey,
-            dev_collections_count: 0,
-            nft_minted: 0,
+            dev_badges_minted: 0,
+            repo_badges_minted: 0,
+            vouches_count: 0,
             bump: bumps.ghost_config,
         });
 

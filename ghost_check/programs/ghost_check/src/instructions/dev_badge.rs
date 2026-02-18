@@ -1,13 +1,14 @@
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::sysvar::instructions::load_instruction_at_checked;
 use mpl_core::{
     instructions::CreateCollectionV2CpiBuilder,
     types::{
-        PermanentFreezeDelegate, Plugin, PluginAuthority, PluginAuthorityPair, UpdateDelegate,
+        Attribute, Attributes, PermanentFreezeDelegate, Plugin, PluginAuthority,
+        PluginAuthorityPair, UpdateDelegate,
     },
     ID as CORE_PROGRAM_ID,
 };
 
+use crate::verify_signature;
 use crate::{
     errors::GhostErrors,
     state::{DevState, GhostConfig},
@@ -32,11 +33,12 @@ pub struct DevBadge<'info> {
         seeds = [b"dev_state", dev.key().as_ref()],
         bump,
     )]
-    pub dev_badge_account: Account<'info, DevState>,
+    pub dev_state: Account<'info, DevState>,
 
     /// CHECK: Core will create this
-    #[account(mut,
-        seeds = [b"dev_badge_collection", dev.key().as_ref()],
+    #[account(
+        mut,
+        seeds = [b"dev_badge", dev.key().as_ref()],
         bump,
         constraint = asset.data_is_empty() @GhostErrors::CollectionAlreadyInitialized)]
     pub asset: UncheckedAccount<'info>,
@@ -55,41 +57,30 @@ pub struct DevBadge<'info> {
 }
 
 impl<'info> DevBadge<'info> {
-    pub fn verify_signature(&self) -> Result<()> {
-        let ix = load_instruction_at_checked(0, &self.instruction_sysvar.to_account_info())?;
-
-        let ed_25519_id: Pubkey =
-            Pubkey::new_from_array(solana_program::ed25519_program::ID.to_bytes());
-
-        require!(ix.program_id == ed_25519_id, GhostErrors::InvalidSignature);
-
-        let data = ix.data;
-        let pubkey_bytes: [u8; 32] = data[16..48]
-            .try_into()
-            .map_err(|_| GhostErrors::PubkeyParseFailed)?;
-
-        require!(
-            pubkey_bytes == self.ghost_config.backend_pubkey,
-            GhostErrors::BackendPubkeyMismatch
-        );
-
-        Ok(())
-    }
-
     pub fn mint_collection(
         &mut self,
         username: &[u8; 32],
         repo_count: u32,
+        owned_repo_count: u32,
+        total_stars: u32,
         total_commits: u32,
+        prs_merged: u32,
+        issues_closed: u32,
+        followers: u32,
+        account_age_days: u32,
+        reputation_level: u8,
         bumps: &DevBadgeBumps,
     ) -> Result<()> {
+        // Verify that the message(dev stats) is signed by the backend signer
+        verify_signature(
+            &self.instruction_sysvar.to_account_info(),
+            &self.ghost_config.backend_pubkey,
+        )?;
+
         // Create Collection Asset for new Dev
         let config_seeds: &[&[&[u8]]] = &[&[b"ghost_config", &[self.ghost_config.bump]]];
-        let asset_seeds: &[&[&[u8]]] = &[&[
-            b"dev_badge_collection",
-            &self.dev.key().to_bytes(),
-            &[bumps.asset],
-        ]];
+        let asset_seeds: &[&[&[u8]]] =
+            &[&[b"dev_state", &self.dev.key().to_bytes(), &[bumps.asset]]];
 
         CreateCollectionV2CpiBuilder::new(&self.core_program.to_account_info())
             .collection(&self.asset.to_account_info())
@@ -115,17 +106,40 @@ impl<'info> DevBadge<'info> {
                         address: self.ghost_config.key(),
                     }),
                 },
+                PluginAuthorityPair {
+                    plugin: Plugin::Attributes(Attributes {
+                        attribute_list: vec![Attribute {
+                            key: String::from("Dev"),
+                            value: self.dev.key().to_string(),
+                        }],
+                    }),
+                    authority: Some(PluginAuthority::UpdateAuthority),
+                },
             ])
             .external_plugin_adapters(vec![])
             .invoke_signed(&[config_seeds[0], asset_seeds[0]])?;
 
-        self.dev_badge_account.set_inner(DevState {
-            address: self.asset.key(),
+        self.ghost_config.dev_badges_minted += 1;
+
+        let current_time = Clock::get()?.unix_timestamp;
+
+        self.dev_state.set_inner(DevState {
+            dev_addr: self.dev.key(),
+            asset_address: self.asset.key(),
             hashed_username: username.clone(),
-            total_commits,
             repo_count,
-            verified_repo: 0,
-            bump: bumps.dev_badge_account,
+            owned_repo_count,
+            total_stars,
+            total_commits,
+            prs_merged,
+            issues_closed,
+            followers,
+            account_age_days,
+            reputation_level,
+            verified_repos: 0,
+            vouch_count: 0,
+            last_updated: current_time,
+            bump: bumps.dev_state,
             collection_asset_bump: bumps.asset,
         });
         Ok(())

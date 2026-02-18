@@ -1,9 +1,8 @@
 use crate::errors::GhostErrors;
 use crate::state::{DevState, GhostConfig, RepoState};
+use crate::verify_signature;
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::sysvar::instructions::{
-    load_instruction_at_checked, ID as SYSVAR_INSTRUCTION_ID,
-};
+use anchor_lang::solana_program::sysvar::instructions::ID as SYSVAR_INSTRUCTION_ID;
 use mpl_core::types::{
     Attribute, Attributes, PermanentFreezeDelegate, Plugin, PluginAuthority, PluginAuthorityPair,
     UpdateDelegate,
@@ -33,7 +32,7 @@ pub struct RepoBadge<'info> {
     /// CHECK: This is being verifed by the contraints
     #[account(
         mut,
-        seeds = [b"dev_badge_collection", dev.key().as_ref()],
+        seeds = [b"dev_badge", dev.key().as_ref()],
         bump = dev_state.collection_asset_bump,
         constraint = !dev_badge.data_is_empty() @GhostErrors::CollectionNotInitialized,
     )]
@@ -43,7 +42,7 @@ pub struct RepoBadge<'info> {
         init,
         payer = dev,
         space = RepoState::DISCRIMINATOR.len() + RepoState::INIT_SPACE,
-        seeds = [b"repo_state", dev_badge.key().as_ref()],
+        seeds = [b"repo_state", dev_badge.key().as_ref(), repo_name_padded.as_ref()],  // One repo state per dev per repo
         bump ,
     )]
     pub repo_state: Account<'info, RepoState>,
@@ -51,7 +50,7 @@ pub struct RepoBadge<'info> {
     /// CHECK: This will be checked and initialized by the core program
     #[account(
         mut,
-        seeds = [b"repo_badge_asset", dev_badge.key().as_ref(), repo_name_padded.as_ref()],
+        seeds = [b"repo_badge_asset", dev_badge.key().as_ref(), repo_name_padded.as_ref()],     // One repo state per dev per repo
         bump,
     )]
     pub repo_badge: UncheckedAccount<'info>,
@@ -71,42 +70,28 @@ pub struct RepoBadge<'info> {
 }
 
 impl<'info> RepoBadge<'info> {
-    pub fn verify_signature(&self) -> Result<()> {
-        let ix = load_instruction_at_checked(0, &self.instruction_sysvar)?;
-
-        // Check that ix program id matches the ed25519 program id
-        let ed25519_id: Pubkey =
-            Pubkey::new_from_array(solana_program::ed25519_program::ID.to_bytes());
-
-        require!(
-            ix.program_id == ed25519_id,
-            GhostErrors::Ed25519PrgmIdMismatch
-        );
-
-        // Check that ix data at position of pubkey of signer matches the backend_pubkey
-        let ix_data = ix.data;
-        let ix_public_key: [u8; 32] = ix_data[16..48]
-            .try_into()
-            .map_err(|_| GhostErrors::PubkeyParseFailed)?;
-
-        require!(
-            ix_public_key == self.ghost_config.backend_pubkey,
-            GhostErrors::BackendPubkeyMismatch
-        );
-
-        Ok(())
-    }
-
     pub fn mint_repo_badge(
         &mut self,
         repo_name_padded: [u8; 32],
         username_padded: [u8; 32],
         stars: u32,
         commits: u32,
+        forks: u32,
+        open_issues: u32,
+        is_fork: u8,
         lang1: Vec<u8>,
         lang2: Vec<u8>,
         bumps: &RepoBadgeBumps,
     ) -> Result<()> {
+        // Verify that the message( Repo stats ) is signed by the backend signer
+        verify_signature(
+            &self.instruction_sysvar.to_account_info(),
+            &self.ghost_config.backend_pubkey,
+        )?;
+
+        // Minting repo badges for forked repo not allowed
+        require!(is_fork != 1, GhostErrors::ForkedRepo);
+
         let config_seeds: &[&[&[u8]]] = &[&[b"ghost_config", &[self.ghost_config.bump]]];
         let repo_badge_seeds: &[&[&[u8]]] = &[&[
             b"repo_badge_asset",
@@ -151,6 +136,10 @@ impl<'info> RepoBadge<'info> {
                                 key: "commits".to_string(),
                                 value: commits.to_string(),
                             },
+                            Attribute {
+                                key: "forks".to_string(),
+                                value: forks.to_string(),
+                            },
                         ],
                     }),
                     authority: Some(PluginAuthority::UpdateAuthority),
@@ -160,18 +149,28 @@ impl<'info> RepoBadge<'info> {
             .invoke_signed(&[config_seeds[0], repo_badge_seeds[0]])?;
 
         // Update the parent collection state
-        self.dev_state.verified_repo += 1;
+        self.dev_state.verified_repos += 1;
+        self.ghost_config.repo_badges_minted += 1;
+
+        // Get current time
+        let time_now = Clock::get()?.unix_timestamp;
 
         // Update the repo state
         self.repo_state.set_inner(RepoState {
             owner: self.dev.key(),
-            repo_name: repo_name_padded.to_vec(),
             dev_badge: self.dev_badge.key(),
+            repo_name: repo_name_padded.to_vec(),
             hashed_username: username_padded,
             stars,
             commits,
+            forks,
+            open_issues,
+            is_fork,
             lang1,
             lang2,
+            last_updated: time_now,
+            bump: bumps.repo_state,
+            badge_bump: bumps.repo_badge,
         });
 
         Ok(())

@@ -20,4 +20,18 @@ pub enum GhostErrors {
     BackendPubkeyMismatch,
     #[msg("Ed25519Program id dosent match the ix program id passed at instruction 0")]
     Ed25519PrgmIdMismatch,
+    #[msg("Repo provided for mint badge is forked")]
+    ForkedRepo,
+    #[msg("dev_state.dev_addr dosent match the signer passed")]
+    IncorrectDevState,
+    #[msg("Dev badge passed and addr found in repo_state mismatch")]
+    DevBadgeMismatch,
+    #[msg("Verifying dev failed due to reputation level lower than min_lvl passed")]
+    DevVerificationFailed,
+    #[msg("Vouchers level has not reached the specified threshold to vouch for others")]
+    LvlNotReached,
+    #[msg("Invalid min_lvl input should range between 1 to 5")]
+    ReputationLvlInvalid,
+    #[msg("Voucher tried to vouch for himself")]
+    SelfVouchDenied,
 }

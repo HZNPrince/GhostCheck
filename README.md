@@ -1,7 +1,7 @@
 # GhostCheck 
 <div align="center">
   <img src="images/frontend_images/landing.png" alt="GhostCheck Banner" width="100%" />
-  <img src="images/frontend_images/dev_badge.png" alt="dev_badge" width="100%" />
+  <img src="images/frontend_images/dev_badge.png" alt="dev_badge" width="50%" />
 
 **The Anonymous On-chain Reputaion Protocol for Developers.**
 

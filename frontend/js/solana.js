@@ -406,8 +406,8 @@ window.buildAndSendUpdateDevBadgeTx = async function (
       { pubkey: ghostConfigPda, isSigner: false, isWritable: true }, // ghost_config
       { pubkey: devStatePda, isSigner: false, isWritable: true }, // dev_badge_account
       { pubkey: devBadgePda, isSigner: false, isWritable: true }, // asset
-      { pubkey: SYSTEM_PROGRAM, isSigner: false, isWritable: false }, // system_program
       { pubkey: SYSVAR_INSTRUCTIONS, isSigner: false, isWritable: false }, // instruction_sysvar
+      { pubkey: SYSTEM_PROGRAM, isSigner: false, isWritable: false }, // system_program
     ],
     data: ixData,
   });

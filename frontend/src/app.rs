@@ -3,6 +3,7 @@ use leptos_router::{components::*, path};
 use wasm_bindgen_futures::spawn_local;
 
 use crate::components::{footer::Footer, navbar::Navbar};
+use crate::pages::profile::Profile;
 use crate::pages::{connect::Connect, dashboard::Dashboard, landing::Landing};
 use crate::services::api;
 
@@ -53,6 +54,7 @@ pub fn App() -> impl IntoView {
                         <Route path=path!("/") view=Landing />
                         <Route path=path!("/connect") view=Connect/>
                         <Route path=path!("/dashboard") view=Dashboard/>
+                        <Route path=path!("/profile") view=Profile/>
                     </Routes>
                 </main>
             <Footer />

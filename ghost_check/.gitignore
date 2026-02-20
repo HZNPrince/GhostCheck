@@ -6,3 +6,6 @@ node_modules
 test-ledger
 .yarn
 logs.txt
+runbooks
+.zed/
+.surfpool/

@@ -50,7 +50,7 @@ pub struct RepoBadge<'info> {
     /// CHECK: This will be checked and initialized by the core program
     #[account(
         mut,
-        seeds = [b"repo_badge_asset", dev_badge.key().as_ref(), repo_name_padded.as_ref()],     // One repo state per dev per repo
+        seeds = [b"repo_badge", dev_badge.key().as_ref(), repo_name_padded.as_ref()],     // One repo state per dev per repo
         bump,
     )]
     pub repo_badge: UncheckedAccount<'info>,
@@ -94,7 +94,7 @@ impl<'info> RepoBadge<'info> {
 
         let config_seeds: &[&[&[u8]]] = &[&[b"ghost_config", &[self.ghost_config.bump]]];
         let repo_badge_seeds: &[&[&[u8]]] = &[&[
-            b"repo_badge_asset",
+            b"repo_badge",
             &self.dev_badge.key().to_bytes(),
             repo_name_padded.as_ref(),
             &[bumps.repo_badge],

@@ -80,7 +80,7 @@ impl<'info> DevBadge<'info> {
         // Create Collection Asset for new Dev
         let config_seeds: &[&[&[u8]]] = &[&[b"ghost_config", &[self.ghost_config.bump]]];
         let asset_seeds: &[&[&[u8]]] =
-            &[&[b"dev_state", &self.dev.key().to_bytes(), &[bumps.asset]]];
+            &[&[b"dev_badge", &self.dev.key().to_bytes(), &[bumps.asset]]];
 
         CreateCollectionV2CpiBuilder::new(&self.core_program.to_account_info())
             .collection(&self.asset.to_account_info())

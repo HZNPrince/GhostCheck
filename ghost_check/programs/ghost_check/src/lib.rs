@@ -18,7 +18,7 @@ pub mod ghost_check {
     }
 
     pub fn mint_dev_badge(
-        ctx: Context<DevBadge>,
+        ctx: Context<DevBadge>, // 73 bytes instruction data size
         username: [u8; 32],
         repo_count: u32,
         owned_repo_count: u32,
@@ -48,7 +48,7 @@ pub mod ghost_check {
     pub fn mint_repo_badge(
         ctx: Context<RepoBadge>,
         repo_name_padded: [u8; 32],
-        username_padded: [u8; 32],
+        username_hashed: [u8; 32],
         stars: u32,
         commits: u32,
         forks: u32,
@@ -59,7 +59,7 @@ pub mod ghost_check {
     ) -> Result<()> {
         ctx.accounts.mint_repo_badge(
             repo_name_padded,
-            username_padded,
+            username_hashed,
             stars,
             commits,
             forks,

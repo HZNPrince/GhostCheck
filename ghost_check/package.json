@@ -8,7 +8,8 @@
     "@coral-xyz/anchor": "^0.32.1",
     "@metaplex-foundation/mpl-core": "^1.7.0",
     "crypto": "^1.0.1",
-    "solana-program": "^0.3.6"
+    "solana-program": "^0.3.6",
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",

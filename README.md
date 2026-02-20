@@ -28,9 +28,9 @@ We act as an oracle, authenticating your GitHub stats, computing a reputation le
 
 ---
 
-## 📸 Sneak Peek & UI Proofs
+##  UI Proofs
 
-Want to see the app in action? Check out our **[Live UI Proofs & Screenshots Directory](./images/frontend_images/)** or view our detailed architecture diagrams below.
+**[Live UI Proofs & Screenshots Directory](./images/frontend_images/)** 
 
 ---
 

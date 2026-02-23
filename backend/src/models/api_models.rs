@@ -1,4 +1,7 @@
+use std::sync::Arc;
+
 use serde::Deserialize;
+use solana_rpc_client::nonblocking::rpc_client::RpcClient;
 use sqlx::PgPool;
 // used for fetch_user_repos  for dev stats
 #[derive(Deserialize)]
@@ -41,4 +44,5 @@ pub struct RepoQuery {
 pub struct AppState {
     pub db: PgPool,
     pub client: reqwest::Client,
+    pub rpc: Arc<RpcClient>,
 }

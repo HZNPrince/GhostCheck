@@ -1,4 +1,7 @@
-use crate::{get_session, models::api_models::*, sign_repo_badge_metrics, signer_public_key};
+use crate::{
+    badges::insert_minted_repo, get_session, models::api_models::*, sign_repo_badge_metrics,
+    signer_public_key,
+};
 use anyhow;
 use axum::{
     Json,
@@ -6,6 +9,7 @@ use axum::{
     http::HeaderMap,
 };
 use reqwest::Client;
+use serde::Deserialize;
 use std::collections::HashMap;
 
 pub async fn fetch_repo_metrics(
@@ -156,4 +160,21 @@ pub async fn repo_metrics(
         "public_key_bytes": public_key,
         "signed_message": hashed_message,
     }))
+}
+
+#[derive(Deserialize)]
+pub struct MintRepoBody {
+    pub wallet_address: String,
+    pub repo_name: String,
+}
+
+// acts when a POST response from frontend is called when a repo is minted
+pub async fn save_minted_repo(
+    State(state): State<AppState>,
+    Json(body): Json<MintRepoBody>,
+) -> Json<serde_json::Value> {
+    match insert_minted_repo(&state.db, &body.wallet_address, &body.repo_name).await {
+        Ok(_) => Json(serde_json::json!({"success": true})),
+        Err(e) => Json(serde_json::json!({"success": false, "error": e.to_string()})),
+    }
 }

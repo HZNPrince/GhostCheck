@@ -1,6 +1,8 @@
 pub mod sessions;
 use std::env;
 
+pub mod badges;
+
 pub use sessions::*;
 
 use sqlx::{PgPool, postgres::PgPoolOptions};

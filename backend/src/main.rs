@@ -27,7 +27,6 @@ use crate::badges::create_badge_table;
 
 #[tokio::main]
 async fn main() {
-    dotenv::dotenv().ok();
     // init postgres pool
     let pool = init_db().await;
 
@@ -52,9 +51,11 @@ async fn main() {
     };
 
     let app = routes::create_router(state);
-    let listener = TcpListener::bind("127.0.0.1:3000").await.unwrap();
-
-    println!("Server running on http://localhost:3000");
+    // Railway sets PORT env var; fallback to 3000 for local dev
+    let port = env::var("PORT").unwrap_or("3000".into());
+    let addr = format!("0.0.0.0:{}", port);
+    let listener = TcpListener::bind(&addr).await.unwrap();
+    println!("Server running on {}", addr);
 
     axum::serve(listener, app).await.unwrap();
 }

@@ -1,11 +1,29 @@
 use leptos::prelude::*;
 use leptos_router::components::A;
+use wasm_bindgen_futures::spawn_local;
 
 use crate::app::WalletState;
+use crate::services::api;
 
 #[component]
 pub fn Landing() -> impl IntoView {
     let user_wallet = expect_context::<WalletState>();
+
+    // Live protocol stats
+    let (devs_verified, set_devs_verified) = signal(String::from("--"));
+    let (badges_minted, set_badges_minted) = signal(String::from("--"));
+    let (repos_verified, set_repos_verified) = signal(String::from("--"));
+
+    // Fetch on mount
+    spawn_local(async move {
+        if let Ok(stats) = api::fetch_protocol_stats().await {
+            set_devs_verified.set(stats.dev_badges_minted.to_string());
+            set_badges_minted
+                .set((stats.dev_badges_minted as u32 + stats.repo_badges_minted).to_string());
+            set_repos_verified.set(stats.repo_badges_minted.to_string());
+        }
+    });
+
     view! {
         <section class="hero">
             <div class="hero-content">
@@ -59,15 +77,15 @@ pub fn Landing() -> impl IntoView {
 
         <section class="stats-bar">
             <div class="stat">
-                <span class="stat-value">"--"</span>
+                <span class="stat-value">{move || devs_verified.get()}</span>
                 <span class="stat-label">"DEVS VERIFIED"</span>
             </div>
             <div class="stat">
-                <span class="stat-value">"--"</span>
+                <span class="stat-value">{move || badges_minted.get()}</span>
                 <span class="stat-label">"BADGES MINTED"</span>
             </div>
             <div class="stat">
-                <span class="stat-value">"--"</span>
+                <span class="stat-value">{move || repos_verified.get()}</span>
                 <span class="stat-label">"REPO VERIFIED"</span>
             </div>
         </section>

@@ -1,5 +1,7 @@
 use crate::AppState;
-use crate::gh_api::onchain_api::{get_dev_badge, get_repo_badges};
+use crate::gh_api::onchain_api::{
+    get_dev_badge, get_protocol_stats, get_repo_badges, search_repo_badges,
+};
 use crate::gh_api::{dev_metrics, repo_metrics, save_minted_repo};
 use crate::gh_auth::{check_auth, github_callback, github_login, root};
 use axum::http;
@@ -29,6 +31,8 @@ pub fn create_router(state: AppState) -> Router {
         .route("/api/onchain/dev_badge", get(get_dev_badge))
         .route("/api/badges/repo", post(save_minted_repo))
         .route("/api/onchain/repos", get(get_repo_badges))
+        .route("/api/stats", get(get_protocol_stats))
+        .route("/api/search/repos", get(search_repo_badges))
         .layer(cors)
         .with_state(state)
 }

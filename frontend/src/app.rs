@@ -4,6 +4,7 @@ use wasm_bindgen_futures::spawn_local;
 
 use crate::components::{footer::Footer, navbar::Navbar};
 use crate::pages::profile::Profile;
+use crate::pages::search::Search;
 use crate::pages::{connect::Connect, dashboard::Dashboard, landing::Landing};
 use crate::services::api;
 
@@ -38,11 +39,23 @@ pub fn App() -> impl IntoView {
         set_username: set_gh_username,
     });
 
+    // Auto-check GitHub auth on mount
     spawn_local(async move {
         if let Ok(status) = api::fetch_auth_status().await {
             if status.authenticated {
                 set_gh_username.set(status.username);
             }
+        }
+    });
+
+    // Auto-reconnect wallet on mount (silent, no popup)
+    spawn_local(async move {
+        match crate::services::wallet::try_reconnect_phantom().await {
+            Ok(pubkey) => {
+                log::info!("Wallet auto-reconnected: {}", pubkey);
+                set_address.set(Some(pubkey));
+            }
+            Err(_) => {} // Not previously connected, ignore
         }
     });
 
@@ -55,6 +68,7 @@ pub fn App() -> impl IntoView {
                         <Route path=path!("/connect") view=Connect/>
                         <Route path=path!("/dashboard") view=Dashboard/>
                         <Route path=path!("/profile") view=Profile/>
+                        <Route path=path!("/search") view=Search/>
                     </Routes>
                 </main>
             <Footer />

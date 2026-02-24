@@ -8,11 +8,15 @@ skip-lint = false
 [programs.localnet]
 ghost_check = "GQsPhnZApw9MY7khsbRLtL5mAGpmMn8wp8CFNDPTxGQr"
 
+[programs.devnet]
+ghost_check = "GQsPhnZApw9MY7khsbRLtL5mAGpmMn8wp8CFNDPTxGQr"
+
+
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "../../../../dev_creds/keypairs/DevXPxYms5t88gQQ5w9N8z5ifu8F6F8KPKYjaYRrkQei.json"
 
 [scripts]

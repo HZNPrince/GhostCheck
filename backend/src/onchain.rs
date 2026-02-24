@@ -9,6 +9,41 @@ use solana_sdk::pubkey::Pubkey;
 const PROGRAM_ID: &str = "GQsPhnZApw9MY7khsbRLtL5mAGpmMn8wp8CFNDPTxGQr";
 const ANCHOR_DISCRIMINATOR_LEN: usize = 8;
 
+// Protocol-level stats from GhostConfig
+
+#[derive(Serialize)]
+pub struct ProtocolStats {
+    pub dev_badges_minted: u64,
+    pub repo_badges_minted: u32,
+    pub vouches_count: u32,
+}
+
+pub async fn fetch_protocol_stats(rpc: &RpcClient) -> ProtocolStats {
+    let program_id = Pubkey::from_str(PROGRAM_ID).unwrap();
+    let (pda, _) = Pubkey::find_program_address(&[b"ghost_config"], &program_id);
+
+    let account = match rpc.get_account(&pda).await {
+        Ok(a) => a,
+        Err(_) => {
+            return ProtocolStats {
+                dev_badges_minted: 0,
+                repo_badges_minted: 0,
+                vouches_count: 0,
+            };
+        }
+    };
+
+    let data = &account.data;
+    let o = ANCHOR_DISCRIMINATOR_LEN + 64; // skip admin + backend_pubkey
+    ProtocolStats {
+        dev_badges_minted: read_u64(data, o),
+        repo_badges_minted: read_u32(data, o + 8),
+        vouches_count: read_u32(data, o + 12),
+    }
+}
+
+// ---- Dev Badge ----
+
 #[derive(Serialize)]
 pub struct DevBadgeData {
     pub exists: bool,
@@ -108,15 +143,38 @@ pub struct RepoBadgeData {
     pub lang2: String,
 }
 
-pub async fn fetch_repo_badge(
-    rpc: &RpcClient,
-    hashed_username: &[u8; 32],
-    repo_name: &str,
-) -> RepoBadgeData {
+/// Derive the dev_badge PDA for a wallet (same seeds as on-chain program)
+fn derive_dev_badge_key(wallet_str: &str) -> Option<Pubkey> {
+    let wallet = Pubkey::from_str(wallet_str).ok()?;
+    let program_id = Pubkey::from_str(PROGRAM_ID).unwrap();
+    let (dev_badge, _) =
+        Pubkey::find_program_address(&[b"dev_badge", wallet.as_ref()], &program_id);
+    Some(dev_badge)
+}
+
+/// Pad a repo name to 32 bytes (zero-padded), matching the on-chain format
+fn pad_repo_name(name: &str) -> [u8; 32] {
+    let mut padded = [0u8; 32];
+    let bytes = name.as_bytes();
+    let len = bytes.len().min(32);
+    padded[..len].copy_from_slice(&bytes[..len]);
+    padded
+}
+
+pub async fn fetch_repo_badge(rpc: &RpcClient, wallet_str: &str, repo_name: &str) -> RepoBadgeData {
     let program_id = Pubkey::from_str(PROGRAM_ID).unwrap();
 
+    // Derive dev_badge key from wallet (matches on-chain seeds)
+    let dev_badge = match derive_dev_badge_key(wallet_str) {
+        Some(key) => key,
+        None => return default_repo(repo_name),
+    };
+
+    // Pad repo name to 32 bytes (matches on-chain repo_name_padded)
+    let repo_name_padded = pad_repo_name(repo_name);
+
     let (pda, _bump) = Pubkey::find_program_address(
-        &[b"repo_state", hashed_username, repo_name.as_bytes()],
+        &[b"repo_state", dev_badge.as_ref(), repo_name_padded.as_ref()],
         &program_id,
     );
 

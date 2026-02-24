@@ -1,6 +1,6 @@
 use ed25519_dalek::{Signer, SigningKey};
 use sha2::{Digest, Sha256};
-use std::{env, io::Read};
+use std::env;
 
 pub fn sign_dev_badge_metrics(
     username: &str,

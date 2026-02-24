@@ -52,7 +52,7 @@ pub struct UpdateRepoBadge<'info> {
     #[account(
         mut,
         seeds = [b"repo_badge", dev_badge.key().as_ref(), &repo_name_padded],
-        bump = repo_state.bump
+        bump = repo_state.badge_bump
     )]
     pub repo_badge: UncheckedAccount<'info>,
 

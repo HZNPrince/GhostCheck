@@ -1,25 +1,26 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>GhostCheck - Anonymous Onchain Reputation</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GhostCheck - Anonymous Onchain Reputation</title>
 
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
-            rel="stylesheet"
-        />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
 
-        <link data-trunk rel="css" href="style/main.css" />
+    <link data-trunk rel="css" href="style/main.css" />
 
-        <!-- Load Solana Web3.js from CDN (makes solanaWeb3 available globally) -->
-        <script src="https://unpkg.com/@solana/web3.js@1.98.0/lib/index.iife.min.js"></script>
-    </head>
-    <body>
-        <!-- Trunk: copy our JS bridge file to dist/ -->
-        <link data-trunk rel="copy-file" href="js/solana.js" />
-        <!-- Load it after web3.js is available -->
-        <script src="solana.js"></script>
-    </body>
+    <!-- Load Solana Web3.js from CDN (makes solanaWeb3 available globally) -->
+    <script src="https://unpkg.com/@solana/web3.js@1.98.0/lib/index.iife.min.js"></script>
+  </head>
+  <body>
+    <!-- Trunk: copy our JS bridge file to dist/ -->
+    <link data-trunk rel="copy-file" href="js/solana.js" />
+    <!-- Load it after web3.js is available -->
+    <script src="solana.js"></script>
+  </body>
 </html>

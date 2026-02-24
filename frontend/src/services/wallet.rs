@@ -74,3 +74,47 @@ pub async fn disconnect_phantom() -> Result<(), String> {
 
     Ok(())
 }
+
+// Silent reconnect — only works if user previously approved this site
+pub async fn try_reconnect_phantom() -> Result<String, String> {
+    let window = web_sys::window().ok_or("No Window")?;
+
+    let phantom =
+        Reflect::get(&window, &"phantom".into()).map_err(|_| "Phantom not found".to_string())?;
+    let solana = Reflect::get(&phantom, &"solana".into())
+        .map_err(|_| "Solana provider not found".to_string())?;
+
+    let connect_fn: js_sys::Function = Reflect::get(&solana, &"connect".into())
+        .map_err(|_| "connect not found".to_string())?
+        .dyn_into()
+        .map_err(|_| "connect is not a function".to_string())?;
+
+    // Pass { onlyIfTrusted: true } to connect silently
+    let opts = js_sys::Object::new();
+    Reflect::set(&opts, &"onlyIfTrusted".into(), &true.into())
+        .map_err(|_| "Failed to set option".to_string())?;
+
+    let promise: js_sys::Promise = connect_fn
+        .call1(&solana, &opts)
+        .map_err(|_| "connect call failed".to_string())?
+        .dyn_into()
+        .map_err(|_| "didn't return Promise".to_string())?;
+
+    let result = JsFuture::from(promise)
+        .await
+        .map_err(|_| "Not previously connected".to_string())?;
+
+    let public_key =
+        Reflect::get(&result, &"publicKey".into()).map_err(|_| "No publicKey".to_string())?;
+
+    let to_string_fn: js_sys::Function = Reflect::get(&public_key, &"toString".into())
+        .map_err(|_| "toString not found".to_string())?
+        .dyn_into()
+        .map_err(|_| "not a function".to_string())?;
+
+    let pubkey_str = to_string_fn
+        .call0(&public_key)
+        .map_err(|_| "toString failed".to_string())?;
+
+    Ok(pubkey_str.as_string().unwrap_or_default())
+}

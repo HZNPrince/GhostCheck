@@ -4,6 +4,13 @@ use web_sys::RequestCredentials;
 
 const BACKEND: &str = "https://ghostcheck-production.up.railway.app";
 
+fn get_auth_token() -> String {
+    web_sys::window()
+        .and_then(|win| win.local_storage().ok().flatten())
+        .and_then(|ls| ls.get_item("session_id").ok().flatten())
+        .unwrap_or_default()
+}
+
 #[derive(Deserialize, Debug, Clone)]
 pub struct DevMetrics {
     pub hashed_username: Vec<u8>,
@@ -39,7 +46,7 @@ pub struct RepoMetrics {
 
 pub async fn fetch_github_metrics() -> Result<DevMetrics, String> {
     let response = Request::get(&format!("{}/api/metrics/dev", BACKEND))
-        .credentials(RequestCredentials::Include)
+        .header("Authorization", &format!("Bearer {}", get_auth_token()))
         .send()
         .await
         .map_err(|e| format!("Request for dev_matrics stats failed {}", e))?;
@@ -55,7 +62,7 @@ pub async fn fetch_github_metrics() -> Result<DevMetrics, String> {
 
 pub async fn fetch_repo_metrics(repo_name: &str) -> Result<RepoMetrics, String> {
     let response = Request::get(&format!("{}/api/metrics/repo?repo={}", BACKEND, repo_name))
-        .credentials(RequestCredentials::Include)
+        .header("Authorization", &format!("Bearer {}", get_auth_token()))
         .send()
         .await
         .map_err(|e| format!("Failed to send request: {}", e))?;
@@ -77,7 +84,7 @@ pub struct AuthStatus {
 
 pub async fn fetch_auth_status() -> Result<AuthStatus, String> {
     let response = Request::get(&format!("{}/api/auth/check", BACKEND))
-        .credentials(RequestCredentials::Include)
+        .header("Authorization", &format!("Bearer {}", get_auth_token()))
         .send()
         .await
         .map_err(|e| format!("Auth Check failed {}", e))?;
@@ -111,7 +118,7 @@ pub async fn check_dev_badge(wallet: &str) -> Result<OnChainDevBadge, String> {
         "{}/api/onchain/dev_badge?wallet={}",
         BACKEND, wallet
     ))
-    .credentials(RequestCredentials::Include)
+    .header("Authorization", &format!("Bearer {}", get_auth_token()))
     .send()
     .await
     .map_err(|e| format!("Fetch Dev Badge call to backend failed: {}", e))?;
@@ -149,7 +156,7 @@ pub struct ReposResponse {
 // Get request to backend to fetch the repo_badges for the user minted
 pub async fn fetch_minted_repos(wallet: &str) -> Result<Vec<OnchainRepoBadgeData>, String> {
     let response = Request::get(&format!("{}/api/onchain/repos?wallet={}", BACKEND, wallet))
-        .credentials(RequestCredentials::Include)
+        .header("Authorization", &format!("Bearer {}", get_auth_token()))
         .send()
         .await
         .map_err(|e| format!("Fetch Repos call to backend failed : {}", e))?;
@@ -169,7 +176,7 @@ pub async fn fetch_minted_repos(wallet: &str) -> Result<Vec<OnchainRepoBadgeData
 // To save minted_repos to db
 pub async fn save_repo_mint(wallet: &str, repo_name: &str) -> Result<(), String> {
     let response = Request::post(&format!("{}/api/badges/repo", BACKEND))
-        .credentials(RequestCredentials::Include)
+        .header("Authorization", &format!("Bearer {}", get_auth_token()))
         .header("Content-Type", "application/json")
         .body(serde_json::json!({"wallet_address": wallet, "repo_name": repo_name}).to_string())
         .map_err(|e| format!("Failed to build request: {}", e))?

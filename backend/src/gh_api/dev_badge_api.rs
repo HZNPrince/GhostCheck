@@ -189,9 +189,10 @@ pub async fn dev_metrics(
         return Json(serde_json::json!({"error": "Not authorized"}));
     }
 
-    let fetched_session = get_session(&state.db, session_id)
-        .await
-        .expect("Invalid Session id, failed to fetch from db");
+    let fetched_session = match get_session(&state.db, session_id).await {
+        Ok(s) => s,
+        Err(_) => return Json(serde_json::json!({"error": "Session not found or expired"})),
+    };
 
     let token_access = fetched_session.access_token;
     let username = fetched_session.username;

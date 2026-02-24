@@ -106,11 +106,9 @@ pub async fn repo_metrics(
     headers: HeaderMap,
 ) -> Json<serde_json::Value> {
     let session_id = headers
-        .get("cookie")
+        .get(axum::http::header::AUTHORIZATION)
         .and_then(|v| v.to_str().ok())
-        .unwrap_or("")
-        .split(';')
-        .find_map(|s| s.trim().strip_prefix("session_id="))
+        .and_then(|v| v.strip_prefix("Bearer "))
         .unwrap_or("");
 
     if session_id.is_empty() {
@@ -119,9 +117,10 @@ pub async fn repo_metrics(
         }));
     }
 
-    let session = get_session(&state.db, session_id)
-        .await
-        .expect("Error Fetching session from db");
+    let session = match get_session(&state.db, session_id).await {
+        Ok(s) => s,
+        Err(_) => return Json(serde_json::json!({"error": "Session not found or expired"})),
+    };
 
     let access_token = session.access_token;
     let username = session.username;

@@ -40,11 +40,9 @@ pub async fn get_repo_badges(
     header: HeaderMap,
 ) -> Json<serde_json::Value> {
     let session_id = header
-        .get("cookie")
+        .get(axum::http::header::AUTHORIZATION)
         .and_then(|v| v.to_str().ok())
-        .unwrap_or("")
-        .split(';')
-        .find_map(|c| c.trim().strip_prefix("session_id="))
+        .and_then(|v| v.strip_prefix("Bearer "))
         .unwrap_or("");
 
     if session_id.is_empty() {

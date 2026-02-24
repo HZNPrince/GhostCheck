@@ -39,6 +39,34 @@ pub fn App() -> impl IntoView {
         set_username: set_gh_username,
     });
 
+    // Extract session from URL if redirected from GitHub
+    Effect::new(move |_| {
+        if let Some(win) = web_sys::window() {
+            if let Ok(url) = url::Url::parse(&win.location().href().unwrap_or_default()) {
+                for (key, value) in url.query_pairs() {
+                    if key == "session_id" {
+                        if let Some(ls) = win.local_storage().ok().flatten() {
+                            let _ = ls.set_item("session_id", &value);
+                        }
+
+                        let clean_url = format!(
+                            "{}//{}{}",
+                            win.location().protocol().unwrap_or_default(),
+                            win.location().host().unwrap_or_default(),
+                            win.location().pathname().unwrap_or_default()
+                        );
+                        let _ = win.history().unwrap().replace_state_with_url(
+                            &wasm_bindgen::JsValue::NULL,
+                            "",
+                            Some(&clean_url),
+                        );
+                        break;
+                    }
+                }
+            }
+        }
+    });
+
     // Auto-check GitHub auth on mount
     spawn_local(async move {
         if let Ok(status) = api::fetch_auth_status().await {

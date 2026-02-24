@@ -37,10 +37,7 @@ pub async fn github_login() -> Redirect {
 pub async fn github_callback(
     State(state): State<AppState>,
     Query(params): Query<CodeQuery>,
-) -> (
-    AppendHeaders<[(http::header::HeaderName, String); 1]>,
-    Redirect,
-) {
+) -> Redirect {
     println!("Github reached at callback URL with code : {}", params.code);
 
     let client_id = env::var("GITHUB_CLIENT_ID").unwrap();
@@ -73,21 +70,16 @@ pub async fn github_callback(
         .await
         .expect("Error inserting and getting the session id");
 
-    // Set cookie and redirect to frontend
-    let cookie = format!(
-        "session_id={}; HttpOnly; SameSite=None; Secure; Path=/; Max-Age=86400",
+    let redirect_url = format!(
+        "https://ghostcheck-dev.vercel.app/dashboard?session_id={}",
         session_id
     );
-
     println!(
-        "Login Successful ! Your session_id: {}\nGo to /metrics/dev?session_id={}",
-        session_id, session_id
+        "Login Successful ! Your session_id: {}\nRedirecting to {}",
+        session_id, redirect_url
     );
 
-    (
-        AppendHeaders([(SET_COOKIE, cookie)]),
-        Redirect::temporary("https://ghostcheck-dev.vercel.app/dashboard"),
-    )
+    Redirect::temporary(&redirect_url)
 }
 
 // /api/auth/check
@@ -96,11 +88,9 @@ pub async fn check_auth(
     header: HeaderMap,
 ) -> Json<serde_json::Value> {
     let session_id = header
-        .get("cookie")
+        .get(http::header::AUTHORIZATION)
         .and_then(|v| v.to_str().ok())
-        .unwrap_or("")
-        .split(';')
-        .find_map(|v| v.trim().strip_prefix("session_id="))
+        .and_then(|v| v.strip_prefix("Bearer "))
         .unwrap_or("");
 
     if session_id.is_empty() {

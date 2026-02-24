@@ -9,3 +9,6 @@ frontend/dist/
 .DS_Store
 Poc_and_Arch.pdf
 UserStory_PoC.pdf
+
+.agent/
+test-ledger

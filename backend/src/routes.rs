@@ -18,7 +18,7 @@ pub fn create_router(state: AppState) -> Router {
                 .unwrap(),
         )
         .allow_methods([Method::GET, Method::POST])
-        .allow_headers([header::CONTENT_TYPE, header::COOKIE])
+        .allow_headers([header::CONTENT_TYPE, header::COOKIE, header::AUTHORIZATION])
         .allow_credentials(true);
 
     Router::new()

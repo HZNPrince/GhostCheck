@@ -21,7 +21,9 @@ pub async fn github_login() -> Redirect {
 
     let client_id = env::var("GITHUB_CLIENT_ID").unwrap();
 
-    let redirect_uri = urlencoding::encode("http://localhost:3000/api/auth/github/callback");
+    let redirect_uri = urlencoding::encode(
+        "https://ghostcheck-production.up.railway.app/api/auth/github/callback",
+    );
     let github_url = format!(
         "https://github.com/login/oauth/authorize?client_id={}&redirect_uri={}&scope=read:user%20repo",
         client_id, redirect_uri
@@ -84,7 +86,7 @@ pub async fn github_callback(
 
     (
         AppendHeaders([(SET_COOKIE, cookie)]),
-        Redirect::temporary("http://localhost:8080/dashboard"),
+        Redirect::temporary("https://ghostcheck-dev.vercel.app/dashboard"),
     )
 }
 

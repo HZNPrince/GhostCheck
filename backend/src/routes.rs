@@ -13,7 +13,7 @@ use tower_http::cors::CorsLayer;
 pub fn create_router(state: AppState) -> Router {
     let cors = CorsLayer::new()
         .allow_origin(
-            "http://localhost:8080"
+            "https://ghostcheck-dev.vercel.app"
                 .parse::<http::HeaderValue>()
                 .unwrap(),
         )

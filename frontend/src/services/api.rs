@@ -2,7 +2,7 @@ use gloo_net::http::Request;
 use serde::Deserialize;
 use web_sys::RequestCredentials;
 
-const BACKEND: &str = "https://ghostcheck-production.up.railway.app";
+const BACKEND: &str = "";
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct DevMetrics {

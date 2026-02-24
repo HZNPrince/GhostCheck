@@ -58,7 +58,7 @@ pub fn Navbar() -> impl IntoView {
                         }.into_any()
                     } else {
                         view! {
-                            <a href="/api/auth/github" class="nav-github-btn">"Authorize GitHub"</a>
+                            <a href="https://ghostcheck-production.up.railway.app/api/auth/github" class="nav-github-btn">"Authorize GitHub"</a>
                         }.into_any()
                     }
                 }}

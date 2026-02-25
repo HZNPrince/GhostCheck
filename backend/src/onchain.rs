@@ -3,12 +3,8 @@
 use std::str::FromStr;
 
 use serde::Serialize;
+use solana_rpc_client::nonblocking::rpc_client::RpcClient;
 use solana_sdk::pubkey::Pubkey;
-
-use crate::{
-    app_state::AppState,
-    gh_api::{dev_metrics::DevMetrics, repo_metrics::RepoMetrics},
-};
 
 const PROGRAM_ID: &str = "BKy6zoA7SJ7tGhnD3KuQh2YL892J7oHb4CqufVn8jW2n";
 const ANCHOR_DISCRIMINATOR_LEN: usize = 8;

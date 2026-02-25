@@ -7,7 +7,7 @@ pub mod errors;
 
 pub mod state;
 
-declare_id!("GQsPhnZApw9MY7khsbRLtL5mAGpmMn8wp8CFNDPTxGQr");
+declare_id!("BKy6zoA7SJ7tGhnD3KuQh2YL892J7oHb4CqufVn8jW2n");
 
 #[program]
 pub mod ghost_check {

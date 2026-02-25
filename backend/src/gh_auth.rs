@@ -3,9 +3,8 @@ use axum::{
     Json,
     extract::{Query, State},
     http::{self, HeaderMap},
-    response::{AppendHeaders, Redirect},
+    response::Redirect,
 };
-use reqwest::header::SET_COOKIE;
 use std::env;
 
 // Models

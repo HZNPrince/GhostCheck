@@ -39,14 +39,17 @@ pub fn App() -> impl IntoView {
         set_username: set_gh_username,
     });
 
-    // Extract session from URL if redirected from GitHub
-    Effect::new(move |_| {
+    // Extract session from URL if redirected from GitHub, save it, then check auth
+    spawn_local(async move {
+        let mut session_saved = false;
+
         if let Some(win) = web_sys::window() {
             if let Ok(url) = url::Url::parse(&win.location().href().unwrap_or_default()) {
                 for (key, value) in url.query_pairs() {
                     if key == "session_id" {
                         if let Some(ls) = win.local_storage().ok().flatten() {
                             let _ = ls.set_item("session_id", &value);
+                            session_saved = true;
                         }
 
                         let clean_url = format!(
@@ -65,10 +68,8 @@ pub fn App() -> impl IntoView {
                 }
             }
         }
-    });
 
-    // Auto-check GitHub auth on mount
-    spawn_local(async move {
+        // Now that we've potentially saved the session, check auth status
         if let Ok(status) = api::fetch_auth_status().await {
             if status.authenticated {
                 set_gh_username.set(status.username);

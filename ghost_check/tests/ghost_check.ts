@@ -156,8 +156,8 @@ describe("ghost_check", () => {
       program.programId
     );
 
-    const sig = await connection.requestAirdrop(user2.publicKey, 2e9);
-    await connection.confirmTransaction(sig);
+    //const sig = await connection.requestAirdrop(user2.publicKey, 2e9);
+    //await connection.confirmTransaction(sig);
   });
 
   // ════════════════════════════════════════
@@ -175,512 +175,512 @@ describe("ghost_check", () => {
     console.log("Config initialized:", tx);
   });
 
-  // it("Should fail — unauthorized init_config", async () => {
-  //   const fake = Keypair.generate();
-  //   const sig = await connection.requestAirdrop(fake.publicKey, 1e9);
-  //   await connection.confirmTransaction(sig);
+  it("Should fail — unauthorized init_config", async () => {
+    const fake = Keypair.generate();
+    const sig = await connection.requestAirdrop(fake.publicKey, 1e9);
+    await connection.confirmTransaction(sig);
 
-  //   try {
-  //     await program.methods
-  //       .initConfig(backendPubkeyArray)
-  //       .accounts({ admin: fake.publicKey, programData: programDataPda })
-  //       .signers([fake])
-  //       .rpc();
-  //     throw new Error("Should have failed");
-  //   } catch (e) {
-  //     expect(e.message).to.not.equal("Should have failed");
-  //   }
-  // });
+    try {
+      await program.methods
+        .initConfig(backendPubkeyArray)
+        .accounts({ admin: fake.publicKey, programData: programDataPda })
+        .signers([fake])
+        .rpc();
+      throw new Error("Should have failed");
+    } catch (e) {
+      expect(e.message).to.not.equal("Should have failed");
+    }
+  });
 
-  // // ════════════════════════════════════════
-  // // 2. MINT DEV BADGE
-  // // ════════════════════════════════════════
+  // ════════════════════════════════════════
+  // 2. MINT DEV BADGE
+  // ════════════════════════════════════════
 
-  // it("Mint Dev Badge", async () => {
-  //   const { hashedUsername, hashedMessage, signature } = signDevMetrics(
-  //     backendKeypair.secretKey,
-  //     "HZNPrince",
-  //     18,
-  //     107,
-  //     10,
-  //     50,
-  //     5,
-  //     3,
-  //     20,
-  //     365,
-  //     2
-  //   );
+  it("Mint Dev Badge", async () => {
+    const { hashedUsername, hashedMessage, signature } = signDevMetrics(
+      backendKeypair.secretKey,
+      "HZNPrince",
+      18,
+      107,
+      10,
+      50,
+      5,
+      3,
+      20,
+      365,
+      2
+    );
 
-  //   const ed25519Ix = Ed25519Program.createInstructionWithPublicKey({
-  //     publicKey: backendKeypair.publicKey.toBytes(),
-  //     message: hashedMessage,
-  //     signature: signature,
-  //   });
+    const ed25519Ix = Ed25519Program.createInstructionWithPublicKey({
+      publicKey: backendKeypair.publicKey.toBytes(),
+      message: hashedMessage,
+      signature: signature,
+    });
 
-  //   const mintIx = await program.methods
-  //     .mintDevBadge(
-  //       Array.from(hashedUsername),
-  //       18,
-  //       10,
-  //       50,
-  //       107,
-  //       5,
-  //       3,
-  //       20,
-  //       365,
-  //       2
-  //     )
-  //     .accounts({
-  //       dev: payer.publicKey,
-  //       instructionSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
-  //       coreProgram: MPL_CORE_PROGRAM_ID,
-  //     })
-  //     .instruction();
+    const mintIx = await program.methods
+      .mintDevBadge(
+        Array.from(hashedUsername),
+        18,
+        10,
+        50,
+        107,
+        5,
+        3,
+        20,
+        365,
+        2
+      )
+      .accounts({
+        dev: payer.publicKey,
+        instructionSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+        coreProgram: MPL_CORE_PROGRAM_ID,
+      })
+      .instruction();
 
-  //   const tx = new Transaction().add(ed25519Ix).add(mintIx);
-  //   const txSig = await sendAndConfirmTransaction(connection, tx, [payer]);
-  //   console.log("Dev Badge minted:", txSig);
-  // });
+    const tx = new Transaction().add(ed25519Ix).add(mintIx);
+    const txSig = await sendAndConfirmTransaction(connection, tx, [payer]);
+    console.log("Dev Badge minted:", txSig);
+  });
 
-  // it("Verify DevState on-chain data", async () => {
-  //   const state = await program.account.devState.fetch(devStatePda);
-  //   expect(state.repoCount).to.equal(18);
-  //   expect(state.totalCommits).to.equal(107);
-  //   expect(state.ownedRepoCount).to.equal(10);
-  //   expect(state.totalStars).to.equal(50);
-  //   expect(state.prsMerged).to.equal(5);
-  //   expect(state.issuesClosed).to.equal(3);
-  //   expect(state.followers).to.equal(20);
-  //   expect(state.accountAgeDays).to.equal(365);
-  //   expect(state.reputationLevel).to.equal(2);
-  //   expect(state.vouchCount.toNumber()).to.equal(0);
-  //   expect(state.verifiedRepos.toNumber()).to.equal(0);
-  //   console.log("DevState verified ✓");
-  // });
+  it("Verify DevState on-chain data", async () => {
+    const state = await program.account.devState.fetch(devStatePda);
+    expect(state.repoCount).to.equal(18);
+    expect(state.totalCommits).to.equal(107);
+    expect(state.ownedRepoCount).to.equal(10);
+    expect(state.totalStars).to.equal(50);
+    expect(state.prsMerged).to.equal(5);
+    expect(state.issuesClosed).to.equal(3);
+    expect(state.followers).to.equal(20);
+    expect(state.accountAgeDays).to.equal(365);
+    expect(state.reputationLevel).to.equal(2);
+    expect(state.vouchCount.toNumber()).to.equal(0);
+    expect(state.verifiedRepos.toNumber()).to.equal(0);
+    console.log("DevState verified ✓");
+  });
 
-  // it("Should fail — duplicate mint dev badge", async () => {
-  //   const { hashedUsername, hashedMessage, signature } = signDevMetrics(
-  //     backendKeypair.secretKey,
-  //     "HZNPrince",
-  //     18,
-  //     107,
-  //     10,
-  //     50,
-  //     5,
-  //     3,
-  //     20,
-  //     365,
-  //     2
-  //   );
+  it("Should fail — duplicate mint dev badge", async () => {
+    const { hashedUsername, hashedMessage, signature } = signDevMetrics(
+      backendKeypair.secretKey,
+      "HZNPrince",
+      18,
+      107,
+      10,
+      50,
+      5,
+      3,
+      20,
+      365,
+      2
+    );
 
-  //   const ed25519Ix = Ed25519Program.createInstructionWithPublicKey({
-  //     publicKey: backendKeypair.publicKey.toBytes(),
-  //     message: hashedMessage,
-  //     signature: signature,
-  //   });
+    const ed25519Ix = Ed25519Program.createInstructionWithPublicKey({
+      publicKey: backendKeypair.publicKey.toBytes(),
+      message: hashedMessage,
+      signature: signature,
+    });
 
-  //   const mintIx = await program.methods
-  //     .mintDevBadge(
-  //       Array.from(hashedUsername),
-  //       18,
-  //       10,
-  //       50,
-  //       107,
-  //       5,
-  //       3,
-  //       20,
-  //       365,
-  //       2
-  //     )
-  //     .accounts({
-  //       dev: payer.publicKey,
-  //       instructionSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
-  //       coreProgram: MPL_CORE_PROGRAM_ID,
-  //     })
-  //     .instruction();
+    const mintIx = await program.methods
+      .mintDevBadge(
+        Array.from(hashedUsername),
+        18,
+        10,
+        50,
+        107,
+        5,
+        3,
+        20,
+        365,
+        2
+      )
+      .accounts({
+        dev: payer.publicKey,
+        instructionSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+        coreProgram: MPL_CORE_PROGRAM_ID,
+      })
+      .instruction();
 
-  //   try {
-  //     const tx = new Transaction().add(ed25519Ix).add(mintIx);
-  //     await sendAndConfirmTransaction(connection, tx, [payer]);
-  //     throw new Error("Should have failed");
-  //   } catch (e) {
-  //     expect(e.message).to.not.equal("Should have failed");
-  //   }
-  // });
+    try {
+      const tx = new Transaction().add(ed25519Ix).add(mintIx);
+      await sendAndConfirmTransaction(connection, tx, [payer]);
+      throw new Error("Should have failed");
+    } catch (e) {
+      expect(e.message).to.not.equal("Should have failed");
+    }
+  });
 
-  // // ════════════════════════════════════════
-  // // 3. MINT REPO BADGE
-  // // ════════════════════════════════════════
+  // ════════════════════════════════════════
+  // 3. MINT REPO BADGE
+  // ════════════════════════════════════════
 
-  // it("Mint Repo Badge", async () => {
-  //   const lang1 = Buffer.from([82, 117, 115, 116]); // "Rust"
-  //   const lang2 = Buffer.from([]);
+  it("Mint Repo Badge", async () => {
+    const lang1 = Buffer.from([82, 117, 115, 116]); // "Rust"
+    const lang2 = Buffer.from([]);
 
-  //   const { hashedUsername, hashedMessage, signature } = signRepoMetrics(
-  //     backendKeypair.secretKey,
-  //     "HZNPrince",
-  //     "Raydium-Indexer",
-  //     lang1,
-  //     lang2,
-  //     1,
-  //     11,
-  //     0,
-  //     2,
-  //     0
-  //   );
+    const { hashedUsername, hashedMessage, signature } = signRepoMetrics(
+      backendKeypair.secretKey,
+      "HZNPrince",
+      "Raydium-Indexer",
+      lang1,
+      lang2,
+      1,
+      11,
+      0,
+      2,
+      0
+    );
 
-  //   const ed25519Ix = Ed25519Program.createInstructionWithPublicKey({
-  //     publicKey: backendKeypair.publicKey.toBytes(),
-  //     message: hashedMessage,
-  //     signature: signature,
-  //   });
+    const ed25519Ix = Ed25519Program.createInstructionWithPublicKey({
+      publicKey: backendKeypair.publicKey.toBytes(),
+      message: hashedMessage,
+      signature: signature,
+    });
 
-  //   const mintIx = await program.methods
-  //     .mintRepoBadge(
-  //       Array.from(repoNamePadded),
-  //       Array.from(hashedUsername),
-  //       1,
-  //       11,
-  //       0,
-  //       2,
-  //       0,
-  //       lang1,
-  //       lang2
-  //     )
-  //     .accounts({
-  //       dev: payer.publicKey,
-  //       instructionSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
-  //       coreProgram: MPL_CORE_PROGRAM_ID,
-  //     })
-  //     .instruction();
+    const mintIx = await program.methods
+      .mintRepoBadge(
+        Array.from(repoNamePadded),
+        Array.from(hashedUsername),
+        1,
+        11,
+        0,
+        2,
+        0,
+        lang1,
+        lang2
+      )
+      .accounts({
+        dev: payer.publicKey,
+        instructionSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+        coreProgram: MPL_CORE_PROGRAM_ID,
+      })
+      .instruction();
 
-  //   const tx = new Transaction().add(ed25519Ix).add(mintIx);
-  //   const txSig = await sendAndConfirmTransaction(connection, tx, [payer]);
-  //   console.log("Repo Badge minted:", txSig);
-  // });
+    const tx = new Transaction().add(ed25519Ix).add(mintIx);
+    const txSig = await sendAndConfirmTransaction(connection, tx, [payer]);
+    console.log("Repo Badge minted:", txSig);
+  });
 
-  // it("Verify RepoState on-chain data", async () => {
-  //   const state = await program.account.repoState.fetch(repoStatePda);
-  //   expect(state.stars).to.equal(1);
-  //   expect(state.commits).to.equal(11);
-  //   expect(state.forks).to.equal(0);
-  //   expect(state.openIssues).to.equal(2);
-  //   expect(state.isFork).to.equal(0);
+  it("Verify RepoState on-chain data", async () => {
+    const state = await program.account.repoState.fetch(repoStatePda);
+    expect(state.stars).to.equal(1);
+    expect(state.commits).to.equal(11);
+    expect(state.forks).to.equal(0);
+    expect(state.openIssues).to.equal(2);
+    expect(state.isFork).to.equal(0);
 
-  //   const devState = await program.account.devState.fetch(devStatePda);
-  //   expect(devState.verifiedRepos.toNumber()).to.equal(1);
-  //   console.log("RepoState verified ✓");
-  // });
+    const devState = await program.account.devState.fetch(devStatePda);
+    expect(devState.verifiedRepos.toNumber()).to.equal(1);
+    console.log("RepoState verified ✓");
+  });
 
-  // it("Should fail — forked repo badge mint", async () => {
-  //   const forkRepoName = Buffer.from("SomeForkedRepo".padEnd(32, "\0"));
-  //   const lang1 = Buffer.from([82, 117, 115, 116]);
-  //   const lang2 = Buffer.from([]);
+  it("Should fail — forked repo badge mint", async () => {
+    const forkRepoName = Buffer.from("SomeForkedRepo".padEnd(32, "\0"));
+    const lang1 = Buffer.from([82, 117, 115, 116]);
+    const lang2 = Buffer.from([]);
 
-  //   const { hashedUsername, hashedMessage, signature } = signRepoMetrics(
-  //     backendKeypair.secretKey,
-  //     "HZNPrince",
-  //     "SomeForkedRepo",
-  //     lang1,
-  //     lang2,
-  //     5,
-  //     3,
-  //     1,
-  //     0,
-  //     1 // is_fork = 1
-  //   );
+    const { hashedUsername, hashedMessage, signature } = signRepoMetrics(
+      backendKeypair.secretKey,
+      "HZNPrince",
+      "SomeForkedRepo",
+      lang1,
+      lang2,
+      5,
+      3,
+      1,
+      0,
+      1 // is_fork = 1
+    );
 
-  //   const ed25519Ix = Ed25519Program.createInstructionWithPublicKey({
-  //     publicKey: backendKeypair.publicKey.toBytes(),
-  //     message: hashedMessage,
-  //     signature: signature,
-  //   });
+    const ed25519Ix = Ed25519Program.createInstructionWithPublicKey({
+      publicKey: backendKeypair.publicKey.toBytes(),
+      message: hashedMessage,
+      signature: signature,
+    });
 
-  //   const mintIx = await program.methods
-  //     .mintRepoBadge(
-  //       Array.from(forkRepoName),
-  //       Array.from(hashedUsername),
-  //       5,
-  //       3,
-  //       1,
-  //       0,
-  //       1, // is_fork = 1
-  //       lang1,
-  //       lang2
-  //     )
-  //     .accounts({
-  //       dev: payer.publicKey,
-  //       instructionSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
-  //       coreProgram: MPL_CORE_PROGRAM_ID,
-  //     })
-  //     .instruction();
+    const mintIx = await program.methods
+      .mintRepoBadge(
+        Array.from(forkRepoName),
+        Array.from(hashedUsername),
+        5,
+        3,
+        1,
+        0,
+        1, // is_fork = 1
+        lang1,
+        lang2
+      )
+      .accounts({
+        dev: payer.publicKey,
+        instructionSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+        coreProgram: MPL_CORE_PROGRAM_ID,
+      })
+      .instruction();
 
-  //   try {
-  //     const tx = new Transaction().add(ed25519Ix).add(mintIx);
-  //     await sendAndConfirmTransaction(connection, tx, [payer]);
-  //     throw new Error("Should have failed");
-  //   } catch (e) {
-  //     expect(e.message).to.not.equal("Should have failed");
-  //   }
-  // });
+    try {
+      const tx = new Transaction().add(ed25519Ix).add(mintIx);
+      await sendAndConfirmTransaction(connection, tx, [payer]);
+      throw new Error("Should have failed");
+    } catch (e) {
+      expect(e.message).to.not.equal("Should have failed");
+    }
+  });
 
-  // // ════════════════════════════════════════
-  // // 4. UPDATE DEV BADGE
-  // // ════════════════════════════════════════
+  // ════════════════════════════════════════
+  // 4. UPDATE DEV BADGE
+  // ════════════════════════════════════════
 
-  // it("Update Dev Badge with new stats", async () => {
-  //   const { hashedUsername, hashedMessage, signature } = signDevMetrics(
-  //     backendKeypair.secretKey,
-  //     "HZNPrince",
-  //     25,
-  //     200,
-  //     15,
-  //     80,
-  //     10,
-  //     8,
-  //     30,
-  //     400,
-  //     3
-  //   );
+  it("Update Dev Badge with new stats", async () => {
+    const { hashedUsername, hashedMessage, signature } = signDevMetrics(
+      backendKeypair.secretKey,
+      "HZNPrince",
+      25,
+      200,
+      15,
+      80,
+      10,
+      8,
+      30,
+      400,
+      3
+    );
 
-  //   const ed25519Ix = Ed25519Program.createInstructionWithPublicKey({
-  //     publicKey: backendKeypair.publicKey.toBytes(),
-  //     message: hashedMessage,
-  //     signature: signature,
-  //   });
+    const ed25519Ix = Ed25519Program.createInstructionWithPublicKey({
+      publicKey: backendKeypair.publicKey.toBytes(),
+      message: hashedMessage,
+      signature: signature,
+    });
 
-  //   const updateIx = await program.methods
-  //     .updateDevBadge(
-  //       Array.from(hashedUsername),
-  //       25,
-  //       15,
-  //       80,
-  //       200,
-  //       10,
-  //       8,
-  //       30,
-  //       400,
-  //       3
-  //     )
-  //     .accounts({
-  //       dev: payer.publicKey,
-  //       instructionSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
-  //     })
-  //     .instruction();
+    const updateIx = await program.methods
+      .updateDevBadge(
+        Array.from(hashedUsername),
+        25,
+        15,
+        80,
+        200,
+        10,
+        8,
+        30,
+        400,
+        3
+      )
+      .accounts({
+        dev: payer.publicKey,
+        instructionSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+      })
+      .instruction();
 
-  //   const tx = new Transaction().add(ed25519Ix).add(updateIx);
-  //   const txSig = await sendAndConfirmTransaction(connection, tx, [payer]);
-  //   console.log("Dev Badge updated:", txSig);
+    const tx = new Transaction().add(ed25519Ix).add(updateIx);
+    const txSig = await sendAndConfirmTransaction(connection, tx, [payer]);
+    console.log("Dev Badge updated:", txSig);
 
-  //   const state = await program.account.devState.fetch(devStatePda);
-  //   expect(state.repoCount).to.equal(25);
-  //   expect(state.totalCommits).to.equal(200);
-  //   expect(state.reputationLevel).to.equal(3);
-  //   expect(state.vouchCount.toNumber()).to.equal(0); // preserved
-  //   expect(state.verifiedRepos.toNumber()).to.equal(1); // preserved
-  //   console.log("Updated DevState verified ✓");
-  // });
+    const state = await program.account.devState.fetch(devStatePda);
+    expect(state.repoCount).to.equal(25);
+    expect(state.totalCommits).to.equal(200);
+    expect(state.reputationLevel).to.equal(3);
+    expect(state.vouchCount.toNumber()).to.equal(0); // preserved
+    expect(state.verifiedRepos.toNumber()).to.equal(1); // preserved
+    console.log("Updated DevState verified ✓");
+  });
 
-  // // ════════════════════════════════════════
-  // // 5. UPDATE REPO BADGE
-  // // ════════════════════════════════════════
+  // ════════════════════════════════════════
+  // 5. UPDATE REPO BADGE
+  // ════════════════════════════════════════
 
-  // it("Update Repo Badge with new stats", async () => {
-  //   const lang1 = Buffer.from([82, 117, 115, 116]);
-  //   const lang2 = Buffer.from([]);
+  it("Update Repo Badge with new stats", async () => {
+    const lang1 = Buffer.from([82, 117, 115, 116]);
+    const lang2 = Buffer.from([]);
 
-  //   const { hashedUsername, hashedMessage, signature } = signRepoMetrics(
-  //     backendKeypair.secretKey,
-  //     "HZNPrince",
-  //     "Raydium-Indexer",
-  //     lang1,
-  //     lang2,
-  //     10,
-  //     50,
-  //     3,
-  //     5,
-  //     0
-  //   );
+    const { hashedUsername, hashedMessage, signature } = signRepoMetrics(
+      backendKeypair.secretKey,
+      "HZNPrince",
+      "Raydium-Indexer",
+      lang1,
+      lang2,
+      10,
+      50,
+      3,
+      5,
+      0
+    );
 
-  //   const ed25519Ix = Ed25519Program.createInstructionWithPublicKey({
-  //     publicKey: backendKeypair.publicKey.toBytes(),
-  //     message: hashedMessage,
-  //     signature: signature,
-  //   });
+    const ed25519Ix = Ed25519Program.createInstructionWithPublicKey({
+      publicKey: backendKeypair.publicKey.toBytes(),
+      message: hashedMessage,
+      signature: signature,
+    });
 
-  //   const updateIx = await program.methods
-  //     .updateRepoBadge(
-  //       Array.from(repoNamePadded),
-  //       Array.from(hashedUsername),
-  //       10,
-  //       50,
-  //       3,
-  //       5,
-  //       lang1,
-  //       lang2
-  //     )
-  //     .accounts({
-  //       dev: payer.publicKey,
-  //       instructionSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
-  //       coreProgram: MPL_CORE_PROGRAM_ID,
-  //     })
-  //     .instruction();
+    const updateIx = await program.methods
+      .updateRepoBadge(
+        Array.from(repoNamePadded),
+        Array.from(hashedUsername),
+        10,
+        50,
+        3,
+        5,
+        lang1,
+        lang2
+      )
+      .accounts({
+        dev: payer.publicKey,
+        instructionSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+        coreProgram: MPL_CORE_PROGRAM_ID,
+      })
+      .instruction();
 
-  //   const tx = new Transaction().add(ed25519Ix).add(updateIx);
-  //   const txSig = await sendAndConfirmTransaction(connection, tx, [payer]);
-  //   console.log("Repo Badge updated:", txSig);
+    const tx = new Transaction().add(ed25519Ix).add(updateIx);
+    const txSig = await sendAndConfirmTransaction(connection, tx, [payer]);
+    console.log("Repo Badge updated:", txSig);
 
-  //   const state = await program.account.repoState.fetch(repoStatePda);
-  //   expect(state.stars).to.equal(10);
-  //   expect(state.commits).to.equal(50);
-  //   expect(state.forks).to.equal(3);
-  //   expect(state.openIssues).to.equal(5);
-  //   console.log("Updated RepoState verified ✓");
-  // });
+    const state = await program.account.repoState.fetch(repoStatePda);
+    expect(state.stars).to.equal(10);
+    expect(state.commits).to.equal(50);
+    expect(state.forks).to.equal(3);
+    expect(state.openIssues).to.equal(5);
+    console.log("Updated RepoState verified ✓");
+  });
 
-  // // ════════════════════════════════════════
-  // // 6. VERIFY DEV
-  // // ════════════════════════════════════════
+  // ════════════════════════════════════════
+  // 6. VERIFY DEV
+  // ════════════════════════════════════════
 
-  // it("Verify Dev — should pass (level 3, min_lvl 2)", async () => {
-  //   await program.methods
-  //     .verifyDev(Array.from(payer.publicKey.toBytes()), 2)
-  //     .accounts({})
-  //     .rpc();
-  //   console.log("Verify dev passed ✓");
-  // });
+  it("Verify Dev — should pass (level 3, min_lvl 2)", async () => {
+    await program.methods
+      .verifyDev(Array.from(payer.publicKey.toBytes()), 2)
+      .accounts({})
+      .rpc();
+    console.log("Verify dev passed ✓");
+  });
 
-  // it("Verify Dev — should pass (level 3, min_lvl 3)", async () => {
-  //   await program.methods
-  //     .verifyDev(Array.from(payer.publicKey.toBytes()), 3)
-  //     .accounts({})
-  //     .rpc();
-  //   console.log("Verify dev level 3 passed ✓");
-  // });
+  it("Verify Dev — should pass (level 3, min_lvl 3)", async () => {
+    await program.methods
+      .verifyDev(Array.from(payer.publicKey.toBytes()), 3)
+      .accounts({})
+      .rpc();
+    console.log("Verify dev level 3 passed ✓");
+  });
 
-  // it("Should fail — verify dev insufficient level (min_lvl 5)", async () => {
-  //   try {
-  //     await program.methods
-  //       .verifyDev(Array.from(payer.publicKey.toBytes()), 5)
-  //       .accounts({})
-  //       .rpc();
-  //     throw new Error("Should have failed");
-  //   } catch (e) {
-  //     expect(e.message).to.not.equal("Should have failed");
-  //   }
-  // });
+  it("Should fail — verify dev insufficient level (min_lvl 5)", async () => {
+    try {
+      await program.methods
+        .verifyDev(Array.from(payer.publicKey.toBytes()), 5)
+        .accounts({})
+        .rpc();
+      throw new Error("Should have failed");
+    } catch (e) {
+      expect(e.message).to.not.equal("Should have failed");
+    }
+  });
 
-  // it("Should fail — verify dev invalid min_lvl (0)", async () => {
-  //   try {
-  //     await program.methods
-  //       .verifyDev(Array.from(payer.publicKey.toBytes()), 0)
-  //       .accounts({})
-  //       .rpc();
-  //     throw new Error("Should have failed");
-  //   } catch (e) {
-  //     expect(e.message).to.not.equal("Should have failed");
-  //   }
-  // });
+  it("Should fail — verify dev invalid min_lvl (0)", async () => {
+    try {
+      await program.methods
+        .verifyDev(Array.from(payer.publicKey.toBytes()), 0)
+        .accounts({})
+        .rpc();
+      throw new Error("Should have failed");
+    } catch (e) {
+      expect(e.message).to.not.equal("Should have failed");
+    }
+  });
 
-  // it("Should fail — verify dev invalid min_lvl (6)", async () => {
-  //   try {
-  //     await program.methods
-  //       .verifyDev(Array.from(payer.publicKey.toBytes()), 6)
-  //       .accounts({})
-  //       .rpc();
-  //     throw new Error("Should have failed");
-  //   } catch (e) {
-  //     expect(e.message).to.not.equal("Should have failed");
-  //   }
-  // });
+  it("Should fail — verify dev invalid min_lvl (6)", async () => {
+    try {
+      await program.methods
+        .verifyDev(Array.from(payer.publicKey.toBytes()), 6)
+        .accounts({})
+        .rpc();
+      throw new Error("Should have failed");
+    } catch (e) {
+      expect(e.message).to.not.equal("Should have failed");
+    }
+  });
 
-  // // ════════════════════════════════════════
-  // // 7. VOUCH FOR DEV
-  // // ════════════════════════════════════════
+  // ════════════════════════════════════════
+  // 7. VOUCH FOR DEV
+  // ════════════════════════════════════════
 
-  // it("Mint Dev Badge for user2 (level 1)", async () => {
-  //   const { hashedUsername, hashedMessage, signature } = signDevMetrics(
-  //     backendKeypair.secretKey,
-  //     "User2Dev",
-  //     5,
-  //     50,
-  //     3,
-  //     10,
-  //     2,
-  //     1,
-  //     5,
-  //     180,
-  //     1
-  //   );
+  it("Mint Dev Badge for user2 (level 1)", async () => {
+    const { hashedUsername, hashedMessage, signature } = signDevMetrics(
+      backendKeypair.secretKey,
+      "User2Dev",
+      5,
+      50,
+      3,
+      10,
+      2,
+      1,
+      5,
+      180,
+      1
+    );
 
-  //   const ed25519Ix = Ed25519Program.createInstructionWithPublicKey({
-  //     publicKey: backendKeypair.publicKey.toBytes(),
-  //     message: hashedMessage,
-  //     signature: signature,
-  //   });
+    const ed25519Ix = Ed25519Program.createInstructionWithPublicKey({
+      publicKey: backendKeypair.publicKey.toBytes(),
+      message: hashedMessage,
+      signature: signature,
+    });
 
-  //   const mintIx = await program.methods
-  //     .mintDevBadge(Array.from(hashedUsername), 5, 3, 10, 50, 2, 1, 5, 180, 1)
-  //     .accounts({
-  //       dev: user2.publicKey,
-  //       instructionSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
-  //       coreProgram: MPL_CORE_PROGRAM_ID,
-  //     })
-  //     .instruction();
+    const mintIx = await program.methods
+      .mintDevBadge(Array.from(hashedUsername), 5, 3, 10, 50, 2, 1, 5, 180, 1)
+      .accounts({
+        dev: user2.publicKey,
+        instructionSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+        coreProgram: MPL_CORE_PROGRAM_ID,
+      })
+      .instruction();
 
-  //   const tx = new Transaction().add(ed25519Ix).add(mintIx);
-  //   await sendAndConfirmTransaction(connection, tx, [user2]);
-  //   console.log("User2 Dev Badge minted ✓");
-  // });
+    const tx = new Transaction().add(ed25519Ix).add(mintIx);
+    await sendAndConfirmTransaction(connection, tx, [user2]);
+    console.log("User2 Dev Badge minted ✓");
+  });
 
-  // it("Payer vouches for user2", async () => {
-  //   await program.methods
-  //     .vouchForDev(Array.from(user2.publicKey.toBytes()))
-  //     .accounts({ voucher: payer.publicKey })
-  //     .rpc();
+  it("Payer vouches for user2", async () => {
+    await program.methods
+      .vouchForDev(Array.from(user2.publicKey.toBytes()))
+      .accounts({ voucher: payer.publicKey })
+      .rpc();
 
-  //   const targetState = await program.account.devState.fetch(user2DevStatePda);
-  //   expect(targetState.vouchCount.toNumber()).to.equal(1);
+    const targetState = await program.account.devState.fetch(user2DevStatePda);
+    expect(targetState.vouchCount.toNumber()).to.equal(1);
 
-  //   const config = await program.account.ghostConfig.fetch(ghostConfigPda);
-  //   expect(config.vouchesCount).to.equal(1);
-  //   console.log("Vouch succeeded ✓");
-  // });
+    const config = await program.account.ghostConfig.fetch(ghostConfigPda);
+    expect(config.vouchesCount).to.equal(1);
+    console.log("Vouch succeeded ✓");
+  });
 
-  // it("Should fail — duplicate vouch", async () => {
-  //   try {
-  //     await program.methods
-  //       .vouchForDev(Array.from(user2.publicKey.toBytes()))
-  //       .accounts({ voucher: payer.publicKey })
-  //       .rpc();
-  //     throw new Error("Should have failed");
-  //   } catch (e) {
-  //     expect(e.message).to.not.equal("Should have failed");
-  //   }
-  // });
+  it("Should fail — duplicate vouch", async () => {
+    try {
+      await program.methods
+        .vouchForDev(Array.from(user2.publicKey.toBytes()))
+        .accounts({ voucher: payer.publicKey })
+        .rpc();
+      throw new Error("Should have failed");
+    } catch (e) {
+      expect(e.message).to.not.equal("Should have failed");
+    }
+  });
 
-  // it("Should fail — self-vouch", async () => {
-  //   try {
-  //     await program.methods
-  //       .vouchForDev(Array.from(payer.publicKey.toBytes()))
-  //       .accounts({ voucher: payer.publicKey })
-  //       .rpc();
-  //     throw new Error("Should have failed");
-  //   } catch (e) {
-  //     expect(e.message).to.not.equal("Should have failed");
-  //   }
-  // });
+  it("Should fail — self-vouch", async () => {
+    try {
+      await program.methods
+        .vouchForDev(Array.from(payer.publicKey.toBytes()))
+        .accounts({ voucher: payer.publicKey })
+        .rpc();
+      throw new Error("Should have failed");
+    } catch (e) {
+      expect(e.message).to.not.equal("Should have failed");
+    }
+  });
 
-  // it("Should fail — user2 (level 1) tries to vouch for payer", async () => {
-  //   try {
-  //     await program.methods
-  //       .vouchForDev(Array.from(payer.publicKey.toBytes()))
-  //       .accounts({ voucher: user2.publicKey })
-  //       .signers([user2])
-  //       .rpc();
-  //     throw new Error("Should have failed");
-  //   } catch (e) {
-  //     expect(e.message).to.not.equal("Should have failed");
-  //   }
-  // });
+  it("Should fail — user2 (level 1) tries to vouch for payer", async () => {
+    try {
+      await program.methods
+        .vouchForDev(Array.from(payer.publicKey.toBytes()))
+        .accounts({ voucher: user2.publicKey })
+        .signers([user2])
+        .rpc();
+      throw new Error("Should have failed");
+    } catch (e) {
+      expect(e.message).to.not.equal("Should have failed");
+    }
+  });
 });

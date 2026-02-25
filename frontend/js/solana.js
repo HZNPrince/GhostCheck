@@ -8,8 +8,9 @@ function toBytes(str) {
   return encoder.encode(str)
 }
 
-const PROGRAM_ID = new solanaWeb3.PublicKey("GQsPhnZApw9MY7khsbRLtL5mAGpmMn8wp8CFNDPTxGQr")
+const PROGRAM_ID = new solanaWeb3.PublicKey("BKy6zoA7SJ7tGhnD3KuQh2YL892J7oHb4CqufVn8jW2n")
 const MPL_CORE_PROGRAM_ID = new solanaWeb3.PublicKey("CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d")
+
 const SYSVAR_INSTRUCTIONS = new solanaWeb3.PublicKey("Sysvar1nstructions1111111111111111111111111")
 const SYSTEM_PROGRAM = new solanaWeb3.PublicKey("11111111111111111111111111111111")
 

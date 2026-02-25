@@ -5,12 +5,11 @@ package_manager = "yarn"
 resolution = true
 skip-lint = false
 
-[programs.localnet]
-ghost_check = "GQsPhnZApw9MY7khsbRLtL5mAGpmMn8wp8CFNDPTxGQr"
-
 [programs.devnet]
-ghost_check = "GQsPhnZApw9MY7khsbRLtL5mAGpmMn8wp8CFNDPTxGQr"
+ghost_check = "BKy6zoA7SJ7tGhnD3KuQh2YL892J7oHb4CqufVn8jW2n"
 
+[programs.localnet]
+ghost_check = "BKy6zoA7SJ7tGhnD3KuQh2YL892J7oHb4CqufVn8jW2n"
 
 [registry]
 url = "https://api.apr.dev"

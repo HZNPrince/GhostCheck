@@ -25,7 +25,7 @@ pub async fn github_login() -> Redirect {
         "https://ghostcheck-production.up.railway.app/api/auth/github/callback",
     );
     let github_url = format!(
-        "https://github.com/login/oauth/authorize?client_id={}&redirect_uri={}&scope=read:user%20repo",
+        "https://github.com/login/oauth/authorize?client_id={}&redirect_uri={}&scope=read:user%20public_repo",
         client_id, redirect_uri
     );
 

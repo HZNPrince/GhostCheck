@@ -1,7 +1,7 @@
-# GhostCheck 
+# GhostCheck
+
 <div align="center">
-  <img src="images/frontend_images/landing.png" alt="GhostCheck Banner" width="100%" />
-  <img src="images/frontend_images/dev_badge.png" alt="dev_badge" width="50%" />
+  <video src="images/GhostCheck.mp4" controls="controls" muted="muted" style="max-height:640px; min-height: 200px" width="100%"></video>
 
 **The Anonymous On-chain Reputaion Protocol for Developers.**
 
@@ -26,14 +26,6 @@ In the current Web3 ecosystem, developer reputation is broken. DAOs, grant progr
 **GhostCheck** bridges your Web2 reputation (GitHub) to Web3 (Solana) as a **soulbound, verifiable asset** without revealing your identity.
 
 We act as an oracle, authenticating your GitHub stats, computing a reputation level, cryptographically signing the data via Ed25519, and minting it as an immutable **Metaplex Core Asset** on Solana.
-
----
-
-##  UI Proofs
-
-**[Live UI Proofs & Screenshots Directory](./images/frontend_images/)** 
-
----
 
 ## 🚀 Key Features
 
